@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Мини-GTA 3D</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: #000;
+    font-family: Arial, sans-serif;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  canvas { display: block; }
+
+  #hud {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 12px 15px;
+    color: #fff;
+    font-size: 16px;
+    display: flex;
+    justify-content: space-between;
+    text-shadow: 0 0 8px #000;
+    pointer-events: none;
+    z-index: 10;
+  }
+  #hud .money { color: #4dff88; font-weight: bold; }
+  #hud .wanted { color: #ff4d4d; font-weight: bold; }
+
+  #action-btn {
+    position: absolute;
+    bottom: 40px;
+    right: 30px;
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    background: rgba(255, 220, 0, 0.85);
+    color: #000;
+    font-weight: bold;
+    font-size: 14px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-shadow: 0 0 25px rgba(255, 220, 0, 0.8);
+    z-index: 20;
+    border: 3px solid #fff;
+  }
+
+  #joystick-zone {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 50%; height: 45%;
+    z-index: 15;
+  }
+  #joystick-base {
+    position: absolute;
+    width: 130px; height: 130px;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.1);
+    display: none;
+  }
+  #joystick-knob {
+    position: absolute;
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.7);
+    display: none;
+  }
+
+  #loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #4dff88;
+    font-size: 22px;
+    background: #000;
+    z-index: 100;
+  }
+
+  #message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 0 0 15px #000;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 30;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div id="loading">Загрузка города...</div>
+
+<div id="hud" style="display:none">
+  <div>💰 <span class="money" id="money">0</span></div>
+  <div id="wanted-box" style="display:none">⭐ <span class="wanted" id="wanted">0</span></div>
+</div>
+
+<div id="joystick-zone" style="display:none">
+  <div id="joystick-base"></div>
+  <div id="joystick-knob"></div>
+</div>
+
+<div id="action-btn">СЕСТЬ</div>
+<div id="message"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+// ========== СЦЕНА ==========
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87CEEB);
+scene.fog = new THREE.Fog(0x87CEEB, 60, 180);
+
+const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 500);
+camera.position.set(0, 10, 15);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+// ========== СВЕТ ==========
+scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+
+const sun = new THREE.DirectionalLight(0xfff4e6, 1.4);
+sun.position.set(50, 80, 30);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -100;
+sun.shadow.camera.right = 100;
+sun.shadow.camera.top = 100;
+sun.shadow.camera.bottom = -100;
+sun.shadow.camera.far = 200;
+scene.add(sun);
+
+// ========== ЗЕМЛЯ ==========
+const groundGeo = new THREE.PlaneGeometry(400, 400);
+const groundMat = new THREE.MeshStandardMaterial({ color: 0x3a5a3a });
+const ground = new THREE.Mesh(groundGeo, groundMat);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// ========== ГОРОД ==========
+const CITY_SIZE = 200;
+const BLOCK = 25;
+const ROAD_WIDTH = 8;
+const BUILDING_COLORS = [0x8899aa, 0xaa9988, 0x778899, 0x998877, 0xaaaabb, 0x9a8a7a];
+const buildings = [];
+
+function makeBuilding(x, z, w, d, h) {
+  const color = BUILDING_COLORS[Math.floor(Math.random() * BUILDING_COLORS.length)];
+  const geo = new THREE.BoxGeometry(w, h, d);
+  const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.8, metalness: 0.1 });
+  const building = new THREE.Mesh(geo, mat);
+  building.position.set(x, h / 2, z);
+  building.castShadow = true;
+  building.receiveShadow = true;
+
+  // Окна — текстура-эмиссия через цветные полоски
+  const windows = [];
+  const rows = Math.floor(h / 2);
+  const cols = Math.floor(w / 1.5);
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (Math.random() > 0.6) {
+        const winGeo = new THREE.PlaneGeometry(0.6, 0.8);
+        const winMat = new THREE.MeshBasicMaterial({
+          color: Math.random() > 0.5 ? 0xffee88 : 0x88ccff
+        });
+        const win = new THREE.Mesh(winGeo, winMat);
+        win.position.set(
+          x - w / 2 + 1 + c * 1.5,
+          r * 2 + 1.2,
+          z + d / 2 + 0.01
+        );
+        scene.add(win);
+        windows.push(win);
+      }
+    }
+  }
+
+  scene.add(building);
+  buildings.push({ mesh: building, x, z, w, d, h, windows });
+}
+
+// Строим сетку города
+for (let bx = -CITY_SIZE / 2; bx < CITY_SIZE / 2; bx += BLOCK) {
+  for (let bz = -CITY_SIZE / 2; bz < CITY_SIZE / 2; bz += BLOCK) {
+    // дорога вокруг квартала
+    const roadGeo = new THREE.PlaneGeometry(BLOCK, ROAD_WIDTH);
+    const roadMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+    const roadH = new THREE.Mesh(roadGeo, roadMat);
+    roadH.rotation.x = -Math.PI / 2;
+    roadH.position.set(bx + BLOCK / 2, 0.01, bz);
+    scene.add(roadH);
+
+    const roadV = new THREE.Mesh(roadGeo, roadMat);
+    roadV.rotation.x = -Math.PI / 2;
+    roadV.rotation.z = Math.PI / 2;
+    roadV.position.set(bx, 0.01, bz + BLOCK / 2);
+    scene.add(roadV);
+
+    // Квартал внутри
+    const qSize = BLOCK - ROAD_WIDTH;
+    const nBuildings = 1 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < nBuildings; i++) {
+      const w = 4 + Math.random() * 6;
+      const d = 4 + Math.random() * 6;
+      const h = 6 + Math.random() * 20;
+      const ox = (Math.random() - 0.5) * (qSize - w);
+      const oz = (Math.random() - 0.5) * (qSize - d);
+      makeBuilding(bx + BLOCK / 2 + ox, bz + BLOCK / 2 + oz, w, d, h);
+    }
+  }
+}
+
+// ========== ИГРОК (человечек) ==========
+const playerGroup = new THREE.Group();
+
+const torso = new THREE.Mesh(
+  new THREE.BoxGeometry(0.7, 1.2, 0.4),
+  new THREE.MeshStandardMaterial({ color: 0x2255cc })
+);
+torso.position.y = 1.1;
+torso.castShadow = true;
+playerGroup.add(torso);
+
+const head = new THREE.Mesh(
+  new THREE.SphereGeometry(0.32, 16, 16),
+  new THREE.MeshStandardMaterial({ color: 0xffcc99 })
+);
+head.position.y = 2;
+head.castShadow = true;
+playerGroup.add(head);
+
+const legs = [];
+for (let i = 0; i < 2; i++) {
+  const leg = new THREE.Mesh(
+    new THREE.BoxGeometry(0.28, 1, 0.3),
+    new THREE.MeshStandardMaterial({ color: 0x333344 })
+  );
+  leg.position.set(i === 0 ? -0.18 : 0.18, 0.5, 0);
+  leg.castShadow = true;
+  playerGroup.add(leg);
+  legs.push(leg);
+}
+
+const arms = [];
+for (let i = 0; i < 2; i++) {
+  const arm = new THREE.Mesh(
+    new THREE.BoxGeometry(0.22, 0.9, 0.28),
+    new THREE.MeshStandardMaterial({ color: 0x2255cc })
+  );
+  arm.position.set(i === 0 ? -0.5 : 0.5, 1.3, 0);
+  arm.castShadow = true;
+  playerGroup.add(arm);
+  arms.push(arm);
+}
+
+playerGroup.position.set(5, 0, 5);
+scene.add(playerGroup);
+
+// ========== МАШИНЫ ==========
+const cars = [];
+
+function makeCar(x, z, color, angle = 0) {
+  const carGroup = new THREE.Group();
+
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(2, 0.6, 4),
+    new THREE.MeshStandardMaterial({ color, metalness: 0.6, roughness: 0.3 })
+  );
+  body.position.y = 0.6;
+  body.castShadow = true;
+  carGroup.add(body);
+
+  const cabin = new THREE.Mesh(
+    new THREE.BoxGeometry(1.7, 0.6, 2),
+    new THREE.MeshStandardMaterial({ color: 0x88ccff, metalness: 0.8, roughness: 0.1 })
+  );
+  cabin.position.set(0, 1.2, -0.2);
+  cabin.castShadow = true;
+  carGroup.add(cabin);
+
+  // Колёса
+  const wheelGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.25, 12);
+  wheelGeo.rotateZ(Math.PI / 2);
+  const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+  const positions = [
+    [-0.9, 0.35, 1.2], [0.9, 0.35, 1.2],
+    [-0.9, 0.35, -1.2], [0.9, 0.35, -1.2]
+  ];
+  positions.forEach(([px, py, pz]) => {
+    const w = new THREE.Mesh(wheelGeo, wheelMat);
+    w.position.set(px, py, pz);
+    w.castShadow = true;
+    carGroup.add(w);
+  });
+
+  carGroup.position.set(x, 0, z);
+  carGroup.rotation.y = angle;
+  scene.add(carGroup);
+  cars.push(carGroup);
+  return carGroup;
+}
+
+// Расставим машины по дорогам
+const CAR_COLORS = [0xff2222, 0x22aaff, 0xffff22, 0xffffff, 0x222222, 0x22dd66];
+for (let i = 0; i < 20; i++) {
+  let x, z, angle;
+  if (Math.random() > 0.5) {
+    // на горизонтальной дороге
+    x = (Math.random() - 0.5) * CITY_SIZE;
+    z = Math.round((Math.random() - 0.5) * (CITY_SIZE / BLOCK)) * BLOCK;
+    angle = Math.random() > 0.5 ? 0 : Math.PI;
+  } else {
+    x = Math.round((Math.random() - 0.5) * (CITY_SIZE / BLOCK)) * BLOCK;
+    z = (Math.random() - 0.5) * CITY_SIZE;
+    angle = Math.random() > 0.5 ? Math.PI / 2 : -Math.PI / 2;
+  }
+  makeCar(x, z, CAR_COLORS[i % CAR_COLORS.length], angle);
+}
+
+// ========== УПРАВЛЕНИЕ ==========
+const joystick = { active: false, startX: 0, startY: 0, x: 0, y: 0 };
+const joystickZone = document.getElementById('joystick-zone');
+const joystickBase = document.getElementById('joystick-base');
+const joystickKnob = document.getElementById('joystick-knob');
+const MAX_DIST = 60;
+
+joystickZone.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  joystick.active = true;
+  joystick.startX = t.clientX;
+  joystick.startY = t.clientY;
+  joystickBase.style.display = 'block';
+  joystickBase.style.left = (t.clientX - 65) + 'px';
+  joystickBase.style.top = (t.clientY - 65) + 'px';
+  joystickKnob.style.display = 'block';
+  joystickKnob.style.left = (t.clientX - 30) + 'px';
+  joystickKnob.style.top = (t.clientY - 30) + 'px';
+}, { passive: false });
+
+joystickZone.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (!joystick.active) return;
+  const t = e.touches[0];
+  let dx = t.clientX - joystick.startX;
+  let dy = t.clientY - joystick.startY;
+  const dist = Math.hypot(dx, dy);
+  if (dist > MAX_DIST) {
+    dx = (dx / dist) * MAX_DIST;
+    dy = (dy / dist) * MAX_DIST;
+  }
+  joystick.x = dx / MAX_DIST;
+  joystick.y = dy / MAX_DIST;
+  joystickKnob.style.left = (joystick.startX + dx - 30) + 'px';
+  joystickKnob.style.top = (joystick.startY + dy - 30) + 'px';
+}, { passive: false });
+
+joystickZone.addEventListener('touchend', e => {
+  e.preventDefault();
+  joystick.active = false;
+  joystick.x = 0;
+  joystick.y = 0;
+  joystickBase.style.display = 'none';
+  joystickKnob.style.display = 'none';
+}, { passive: false });
+
+// ПК клавиатура
+const keys = {};
+window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+// ========== ДЕЙСТВИЕ ==========
+const actionBtn = document.getElementById('action-btn');
+let nearestCar = null;
+let drivingCar = null;
+
+actionBtn.addEventListener('touchstart', e => {
+  e.preventDefault();
+  doAction();
+}, { passive: false });
+actionBtn.addEventListener('click', e => {
+  e.preventDefault();
+  doAction();
+});
+window.addEventListener('keydown', e => {
+  if (e.key === 'e' || e.key === 'E' || e.key === 'у' || e.key === 'У') doAction();
+});
+
+function doAction() {
+  if (drivingCar) {
+    // Выйти из машины
+    const pos = drivingCar.position;
+    const side = new THREE.Vector3(Math.cos(drivingCar.rotation.y), 0, -Math.sin(drivingCar.rotation.y)).multiplyScalar(2.5);
+    playerGroup.position.copy(pos).add(side);
+    playerGroup.visible = true;
+    drivingCar = null;
+    showMessage('Вышел из машины', 800);
+  } else if (nearestCar) {
+    // Сесть в машину
+    drivingCar = nearestCar;
+    playerGroup.visible = false;
+    showMessage('Сел в машину 🚗', 800);
+  }
+}
+
+function showMessage(text, ms = 1000) {
+  const m = document.getElementById('message');
+  m.textContent = text;
+  m.style.opacity = 1;
+  clearTimeout(m._t);
+  m._t = setTimeout(() => m.style.opacity = 0, ms);
+}
+
+// ========== ИГРОВАЯ ЛОГИКА ==========
+const clock = new THREE.Clock();
+let walkCycle = 0;
+let money = 0;
+let wanted = 0;
+const PLAYER_SPEED = 5;
+const CAR_MAX_SPEED = 18;
+const CAR_ACCEL = 12;
+const CAR_TURN_SPEED = 1.6;
+
+let carSpeed = 0;
+
+function updatePlayer(dt) {
+  // направление
+  let dx = joystick.x;
+  let dz = joystick.y;
+  if (keys['w'] || keys['ц']) dz = -1;
+  if (keys['s'] || keys['ы']) dz = 1;
+  if (keys['a'] || keys['ф']) dx = -1;
+  if (keys['d'] || keys['в']) dx = 1;
+  if (keys['arrowup']) dz = -1;
+  if (keys['arrowdown']) dz = 1;
+  if (keys['arrowleft']) dx = -1;
+  if (keys['arrowright']) dx = 1;
+
+  const len = Math.hypot(dx, dz);
+  if (len > 0.1 && !drivingCar) {
+    dx /= len;
+    dz /= len;
+    playerGroup.position.x += dx * PLAYER_SPEED * dt;
+    playerGroup.position.z += dz * PLAYER_SPEED * dt;
+
+    // повернуть в сторону движения
+    const angle = Math.atan2(dx, dz);
+    playerGroup.rotation.y = angle;
+
+    // анимация ходьбы
+    walkCycle += dt * 10;
+    legs[0].rotation.x = Math.sin(walkCycle) * 0.6;
+    legs[1].rotation.x = -Math.sin(walkCycle) * 0.6;
+    arms[0].rotation.x = -Math.sin(walkCycle) * 0.4;
+    arms[1].rotation.x = Math.sin(walkCycle) * 0.4;
+  } else {
+    legs[0].rotation.x *= 0.9;
+    legs[1].rotation.x *= 0.9;
+    arms[0].rotation.x *= 0.9;
+    arms[1].rotation.x *= 0.9;
+  }
+
+  // Ограничение по городу
+  playerGroup.position.x = Math.max(-CITY_SIZE / 2, Math.min(CITY_SIZE / 2, playerGroup.position.x));
+  playerGroup.position.z = Math.max(-CITY_SIZE / 2, Math.min(CITY_SIZE / 2, playerGroup.position.z));
+
+  // Коллизии с домами (грубые)
+  buildings.forEach(b => {
+    const px = playerGroup.position.x;
+    const pz = playerGroup.position.z;
+    if (Math.abs(px - b.x) < b.w / 2 + 0.5 && Math.abs(pz - b.z) < b.d / 2 + 0.5) {
+      // отталкиваем
+      const ox = px - b.x;
+      const oz = pz - b.z;
+      if (Math.abs(ox) > Math.abs(oz)) {
+        playerGroup.position.x = b.x + Math.sign(ox) * (b.w / 2 + 0.5);
+      } else {
+        playerGroup.position.z = b.z + Math.sign(oz) * (b.d / 2 + 0.5);
+      }
+    }
+  });
+}
+
+function updateCar(dt) {
+  if (!drivingCar) return;
+
+  let throttle = 0;
+  let steer = 0;
+
+  if (joystick.active) {
+    throttle = -joystick.y;   // вверх = газ
+    steer = joystick.x;       // вправо/влево
+  }
+  if (keys['w'] || keys['arrowup'] || keys['ц']) throttle = 1;
+  if (keys['s'] || keys['arrowdown'] || keys['ы']) throttle = -1;
+  if (keys['a'] || keys['arrowleft'] || keys['ф']) steer = -1;
+  if (keys['d'] || keys['arrowright'] || keys['в']) steer = 1;
+
+  // ускорение
+  if (throttle > 0) {
+    carSpeed += CAR_ACCEL * dt;
+  } else if (throttle < 0) {
+    carSpeed -= CAR_ACCEL * dt * 1.5;
+  } else {
+    carSpeed *= 0.97;
+  }
+  carSpeed = Math.max(-CAR_MAX_SPEED * 0.4, Math.min(CAR_MAX_SPEED, carSpeed));
+
+  // руль
+  if (Math.abs(carSpeed) > 0.3) {
+    drivingCar.rotation.y -= steer * CAR_TURN_SPEED * dt * Math.sign(carSpeed);
+  }
+
+  // движение
+  const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), drivingCar.rotation.y);
+  drivingCar.position.addScaledVector(forward, carSpeed * dt);
+
+  // границы
+  drivingCar.position.x = Math.max(-CITY_SIZE / 2, Math.min(CITY_SIZE / 2, drivingCar.position.x));
+  drivingCar.position.z = Math.max(-CITY_SIZE / 2, Math.min(CITY_SIZE / 2, drivingCar.position.z));
+
+  // коллизии с домами
+  buildings.forEach(b => {
+    const px = drivingCar.position.x;
+    const pz = drivingCar.position.z;
+    if (Math.abs(px - b.x) < b.w / 2 + 1.5 && Math.abs(pz - b.z) < b.d / 2 + 1.5) {
+      const ox = px - b.x;
+      const oz = pz - b.z;
+      if (Math.abs(ox) > Math.abs(oz)) {
+        drivingCar.position.x = b.x + Math.sign(ox) * (b.w / 2 + 1.5);
+      } else {
+        drivingCar.position.z = b.z + Math.sign(oz) * (b.d / 2 + 1.5);
+      }
+      carSpeed *= -0.3; // отскок
+    }
+  });
+
+  // игрок "внутри" — невидим, но следуем за камерой
+  playerGroup.position.copy(drivingCar.position);
+}
+
+function findNearestCar() {
+  if (drivingCar) return;
+  let minDist = 4;
+  let nearest = null;
+  cars.forEach(c => {
+    if (c === drivingCar) return;
+    const d = c.position.distanceTo(playerGroup.position);
+    if (d < minDist) {
+      minDist = d;
+      nearest = c;
+    }
+  });
+  nearestCar = nearest;
+}
+
+function updateCamera(dt) {
+  if (drivingCar) {
+    // камера за машиной
+    const camOffset = new THREE.Vector3(0, 6, -10);
+    camOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), drivingCar.rotation.y);
+    const target = drivingCar.position.clone().add(camOffset);
+    camera.position.lerp(target, 0.1);
+    camera.lookAt(drivingCar.position.clone().add(new THREE.Vector3(0, 1, 0)));
+  } else {
+    // камера от третьего лица за игроком
+    const offset = new THREE.Vector3(
+      Math.sin(playerGroup.rotation.y) * -8,
+      6,
+      Math.cos(playerGroup.rotation.y) * -8
+    );
+    const target = playerGroup.position.clone().add(offset);
+    camera.position.lerp(target, 0.08);
+    camera.lookAt(playerGroup.position.clone().add(new THREE.Vector3(0, 1.5, 0)));
+  }
+}
+
+// ========== АНИМАЦИЯ ==========
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+
+  updatePlayer(dt);
+  updateCar(dt);
+  findNearestCar();
+  updateCamera(dt);
+
+  // Показываем кнопку "Сесть" если рядом машина
+  if (!drivingCar && nearestCar) {
+    actionBtn.style.display = 'flex';
+    actionBtn.textContent = 'СЕСТЬ';
+  } else if (drivingCar) {
+    actionBtn.style.display = 'flex';
+    actionBtn.textContent = 'ВЫЙТИ';
+    actionBtn.style.background = 'rgba(255, 100, 100, 0.85)';
+  } else {
+    actionBtn.style.display = 'none';
+  }
+  if (drivingCar) actionBtn.style.background = 'rgba(255, 100, 100, 0.85)';
+  else actionBtn.style.background = 'rgba(255, 220, 0, 0.85)';
+
+  renderer.render(scene, camera);
+}
+
+// ========== РЕСАЙЗ ==========
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ========== СТАРТ ==========
+setTimeout(() => {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('hud').style.display = 'flex';
+  document.getElementById('joystick-zone').style.display = 'block';
+  animate();
+}, 500);
+</script>
+</body>
+  </html>
