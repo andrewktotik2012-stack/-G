@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-<title>Mini-GTA MEGA 3D v2</title>
+<title>Mini-GTA MEGA 3D v3</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
@@ -79,6 +79,12 @@
     bottom: 140px; right: 130px;
     background: rgba(180, 100, 255, 0.9);
     box-shadow: 0 0 25px rgba(180, 100, 255, 0.7);
+    color: #fff;
+  }
+  #boat-btn {
+    bottom: 240px; right: 30px;
+    background: rgba(0, 150, 200, 0.9);
+    box-shadow: 0 0 25px rgba(0, 150, 200, 0.7);
     color: #fff;
   }
   #heli-up-btn, #heli-down-btn {
@@ -275,6 +281,7 @@
 <div id="shoot-btn" class="action-btn">🔫</div>
 <div id="race-btn" class="action-btn">🏁<br>ГОНКА</div>
 <div id="heli-btn" class="action-btn">🚁<br>СЕСТЬ</div>
+<div id="boat-btn" class="action-btn">🚤<br>ЛОДКА</div>
 <div id="heli-up-btn">⬆️</div>
 <div id="heli-down-btn">⬇️</div>
 
@@ -318,12 +325,17 @@ sun.shadow.mapSize.set(2048, 2048);
 Object.assign(sun.shadow.camera, { left: -120, right: 120, top: 120, bottom: -120, far: 250 });
 scene.add(sun);
 
-// ============ ЗЕМЛЯ ============
+// ============ КОНСТАНТЫ ============
 const CITY_SIZE = 240;
-const RIVER_WIDTH = 20;        // ширина реки
-const RIVER_Y_START = -10;     // река по горизонтали (вдоль оси X)
+const RIVER_WIDTH = 20;
+const RIVER_Y_START = -10;
 const RIVER_Y_END = 10;
+const BLOCK = 30;
+const ROAD_WIDTH = 10;
+const bridgeX = 0;
+const bridgeWidth = 14;
 
+// ============ ЗЕМЛЯ ============
 const ground = new THREE.Mesh(
   new THREE.PlaneGeometry(500, 500),
   new THREE.MeshStandardMaterial({ color: 0x3a5a3a })
@@ -333,7 +345,6 @@ ground.receiveShadow = true;
 scene.add(ground);
 
 // ============ РЕКА ============
-// Вода (синяя плоскость)
 const water = new THREE.Mesh(
   new THREE.PlaneGeometry(CITY_SIZE, RIVER_WIDTH),
   new THREE.MeshStandardMaterial({
@@ -349,7 +360,6 @@ water.position.set(0, 0.05, (RIVER_Y_START + RIVER_Y_END) / 2);
 water.receiveShadow = true;
 scene.add(water);
 
-// Берега (светлый песок)
 const bankMat = new THREE.MeshStandardMaterial({ color: 0xc2b280 });
 const bankN = new THREE.Mesh(new THREE.PlaneGeometry(CITY_SIZE, 2), bankMat);
 bankN.rotation.x = -Math.PI / 2;
@@ -361,8 +371,6 @@ bankS.position.set(0, 0.06, RIVER_Y_END + 1);
 scene.add(bankS);
 
 // ============ ГОРОД ============
-const BLOCK = 30;
-const ROAD_WIDTH = 10;
 const buildings = [];
 const BUILDING_COLORS = [0x8899aa, 0xaa9988, 0x778899, 0x998877, 0xaaaabb, 0x9a8a7a, 0x8a9a8a];
 const windowMaterial = new THREE.MeshBasicMaterial({ color: 0xffee88 });
@@ -396,14 +404,12 @@ function makeBuilding(x, z, w, d, h) {
   buildings.push({ x, z, w, d, h });
 }
 
-// Функция — есть ли тут река?
 function isRiver(x, z) {
   return z > RIVER_Y_START - 2 && z < RIVER_Y_END + 2;
 }
 
 for (let bx = -CITY_SIZE / 2; bx < CITY_SIZE / 2; bx += BLOCK) {
   for (let bz = -CITY_SIZE / 2; bz < CITY_SIZE / 2; bz += BLOCK) {
-    // Пропускаем квартал, если он под рекой
     const qcx = bx + BLOCK / 2;
     const qcz = bz + BLOCK / 2;
     if (isRiver(qcx, qcz)) continue;
@@ -434,12 +440,7 @@ for (let bx = -CITY_SIZE / 2; bx < CITY_SIZE / 2; bx += BLOCK) {
 }
 
 // ============ МОСТ ============
-// Мост через реку (в центре города)
-const bridgeX = 0;
-const bridgeWidth = 14;
 const bridgeMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.5, roughness: 0.4 });
-
-// Дорожное полотно моста
 const bridgeDeck = new THREE.Mesh(
   new THREE.BoxGeometry(bridgeWidth, 0.8, RIVER_WIDTH + 10),
   bridgeMat
@@ -449,7 +450,6 @@ bridgeDeck.castShadow = true;
 bridgeDeck.receiveShadow = true;
 scene.add(bridgeDeck);
 
-// Перила
 const railMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, metalness: 0.7 });
 for (let side = -1; side <= 1; side += 2) {
   const rail = new THREE.Mesh(
@@ -460,7 +460,6 @@ for (let side = -1; side <= 1; side += 2) {
   scene.add(rail);
 }
 
-// Опоры моста
 for (let z = RIVER_Y_START - 3; z <= RIVER_Y_END + 3; z += 8) {
   for (let side = -1; side <= 1; side += 2) {
     const pillar = new THREE.Mesh(
@@ -581,6 +580,20 @@ function makeCar(x, z, typeName, angle = 0) {
     const sirenB = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshBasicMaterial({ color: 0x0000ff }));
     sirenB.position.set(0.4, sh + 0.9, 0);
     g.add(sirenB);
+
+    const beacon = new THREE.Mesh(
+      new THREE.SphereGeometry(0.4, 8, 8),
+      new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.8 })
+    );
+    beacon.position.set(0, sh + 3, 0);
+    g.add(beacon);
+    g.userData.beacon = beacon;
+
+    const policeLight = new THREE.PointLight(0xff0000, 2, 15);
+    policeLight.position.set(0, 2, 0);
+    g.add(policeLight);
+    g.userData.policeLight = policeLight;
+
     g.userData.sirenR = sirenR;
     g.userData.sirenB = sirenB;
   }
@@ -594,10 +607,18 @@ function makeCar(x, z, typeName, angle = 0) {
   return g;
 }
 
-// РАВНОМЕРНОЕ РАСПРЕДЕЛЕНИЕ МАШИН ПО КВАДРАНТАМ
+function isInsideBuilding(x, z, radius = 3) {
+  for (const b of buildings) {
+    if (x > b.x - b.w / 2 - radius && x < b.x + b.w / 2 + radius &&
+        z > b.z - b.d / 2 - radius && z < b.z + b.d / 2 + radius) {
+      return true;
+    }
+  }
+  return false;
+}
+
 const types = ['sedan', 'sport', 'taxi', 'van', 'sedan', 'taxi'];
 function randomRoadPos() {
-  // Возвращает позицию на дороге (по осям сетки), не в реке и не на мосту
   let x, z, angle;
   for (let attempts = 0; attempts < 30; attempts++) {
     if (Math.random() > 0.5) {
@@ -609,42 +630,38 @@ function randomRoadPos() {
       z = (Math.random() - 0.5) * (CITY_SIZE - 20);
       angle = Math.random() > 0.5 ? Math.PI / 2 : -Math.PI / 2;
     }
-    // Не ставим машины в реку или на мост
-    if (!isRiver(x, z)) return { x, z, angle };
+    if (!isRiver(x, z) && !isInsideBuilding(x, z, 2)) return { x, z, angle };
   }
   return { x: 0, z: 20, angle: 0 };
 }
 
-// 4 квадранта × 7 машин = 28
 for (let qi = 0; qi < 4; qi++) {
   for (let i = 0; i < 7; i++) {
     const pos = randomRoadPos();
-    // Сдвигаем в нужный квадрант (по знаку)
     const qx = qi % 2 === 0 ? -1 : 1;
     const qz = qi < 2 ? -1 : 1;
     pos.x = qx * Math.abs(pos.x);
     pos.z = qz * Math.abs(pos.z);
-    // Проверка — не в реке
-    if (isRiver(pos.x, pos.z)) { i--; continue; }
+    if (isRiver(pos.x, pos.z) || isInsideBuilding(pos.x, pos.z, 2)) { i--; continue; }
     makeCar(pos.x, pos.z, types[Math.floor(Math.random() * types.length)], pos.angle);
   }
 }
 
-// Полиция — по одной в каждом квадранте
+// Полиция — по одной в каждом квадранте, ВНЕ домов и ВНЕ реки
 const policeCars = [];
 for (let qi = 0; qi < 4; qi++) {
   const qx = qi % 2 === 0 ? -1 : 1;
   const qz = qi < 2 ? -1 : 1;
   let px, pz;
-  for (let a = 0; a < 30; a++) {
+  for (let a = 0; a < 50; a++) {
     px = qx * (30 + Math.random() * (CITY_SIZE / 2 - 40));
     pz = qz * (30 + Math.random() * (CITY_SIZE / 2 - 40));
-    if (!isRiver(px, pz)) break;
+    if (!isRiver(px, pz) && !isInsideBuilding(px, pz, 3)) break;
   }
   policeCars.push(makeCar(px, pz, 'police'));
 }
 
-// ============ ВЕРТОЛЁТЫ (на земле, ближе к центру) ============
+// ============ ВЕРТОЛЁТЫ ============
 const helis = [];
 function makeHeli(x, z) {
   const g = new THREE.Group();
@@ -686,21 +703,68 @@ function makeHeli(x, z) {
   tailRotor.position.set(0, 0.3, -4);
   g.add(tailRotor);
 
-  // ВЕРТОЛЁТ СТОИТ НА ЗЕМЛЕ (не висит)
   g.position.set(x, 0.8, z);
-  g.userData = {
-    rotor, tailRotor,
-    angle: 0,
-    grounded: true
-  };
+  g.userData = { rotor, tailRotor, angle: 0, grounded: true };
   scene.add(g);
   helis.push(g);
   return g;
 }
 
-// Ставим оба вертолёта недалеко от центра, но не в реке
 makeHeli(30, 30);
 makeHeli(-30, 30);
+
+// ============ ЛОДКА ============
+let boat = null;
+function makeBoat() {
+  const g = new THREE.Group();
+
+  const hull = new THREE.Mesh(
+    new THREE.BoxGeometry(2.5, 0.6, 5),
+    new THREE.MeshStandardMaterial({ color: 0x8B4513, roughness: 0.8 })
+  );
+  hull.position.y = 0.3;
+  hull.castShadow = true;
+  g.add(hull);
+
+  const bottom = new THREE.Mesh(
+    new THREE.BoxGeometry(2, 0.4, 4),
+    new THREE.MeshStandardMaterial({ color: 0x654321 })
+  );
+  bottom.position.y = -0.1;
+  g.add(bottom);
+
+  const cabin = new THREE.Mesh(
+    new THREE.BoxGeometry(1.5, 0.8, 2),
+    new THREE.MeshStandardMaterial({ color: 0xdddddd })
+  );
+  cabin.position.set(0, 1, -0.5);
+  cabin.castShadow = true;
+  g.add(cabin);
+
+  const windshield = new THREE.Mesh(
+    new THREE.BoxGeometry(1.3, 0.5, 0.1),
+    new THREE.MeshStandardMaterial({ color: 0x88ccff, metalness: 0.9, roughness: 0.1, transparent: true, opacity: 0.7 })
+  );
+  windshield.position.set(0, 1.1, 0.5);
+  g.add(windshield);
+
+  // Мотор
+  const motor = new THREE.Mesh(
+    new THREE.BoxGeometry(0.6, 0.8, 0.6),
+    new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.8 })
+  );
+  motor.position.set(0, 0.6, -2.5);
+  g.add(motor);
+
+  // Место на реке (вне моста)
+  g.position.set(-30, 0.3, 0);
+  g.userData = { angle: Math.PI / 2 };
+  g.rotation.y = g.userData.angle;
+  scene.add(g);
+  boat = g;
+  return g;
+}
+makeBoat();
 
 // ============ ПЕШЕХОДЫ ============
 const pedestrians = [];
@@ -753,7 +817,6 @@ function makePedestrian(x, z) {
   return g;
 }
 
-// Пешеходы равномерно
 for (let qi = 0; qi < 4; qi++) {
   const qx = qi % 2 === 0 ? -1 : 1;
   const qz = qi < 2 ? -1 : 1;
@@ -762,7 +825,7 @@ for (let qi = 0; qi < 4; qi++) {
     for (let a = 0; a < 30; a++) {
       px = qx * Math.random() * (CITY_SIZE / 2 - 10);
       pz = qz * Math.random() * (CITY_SIZE / 2 - 10);
-      if (!isRiver(px, pz)) break;
+      if (!isRiver(px, pz) && !isInsideBuilding(px, pz, 1)) break;
     }
     makePedestrian(px, pz);
   }
@@ -783,7 +846,7 @@ function spawnMissionMarker() {
   for (let a = 0; a < 30; a++) {
     x = (Math.random() - 0.5) * (CITY_SIZE - 40);
     z = (Math.random() - 0.5) * (CITY_SIZE - 40);
-    if (!isRiver(x, z)) break;
+    if (!isRiver(x, z) && !isInsideBuilding(x, z, 3)) break;
   }
   missionMarker.position.set(x, 3, z);
 
@@ -823,7 +886,7 @@ function startRace() {
     for (let a = 0; a < 30; a++) {
       x = (Math.random() - 0.5) * (CITY_SIZE - 40);
       z = (Math.random() - 0.5) * (CITY_SIZE - 40);
-      if (!isRiver(x, z)) break;
+      if (!isRiver(x, z) && !isInsideBuilding(x, z, 3)) break;
     }
     cp.position.set(x, 4, z);
 
@@ -843,7 +906,7 @@ function startRace() {
   raceActive = true;
   raceIndex = 0;
   raceTime = 0;
-  showMessage('🏁 Гонка началась! Собери 8 чекпоинтов', 2000);
+  showMessage('🏁 Гонка началась!', 2000);
   beep(800, 0.15);
   beep(1200, 0.15);
 
@@ -872,18 +935,22 @@ function shoot(from, direction, isEnemy = false) {
   beep(isEnemy ? 300 : 900, 0.05, 'square', 0.05);
 }
 
+// ИСПРАВЛЕНО: увеличен радиус попадания и проверка по ВСЕМ пешеходам/машинам
 function updateBullets(dt) {
   for (let i = bullets.length - 1; i >= 0; i--) {
     const b = bullets[i];
+    const oldPos = b.position.clone();
     b.position.x += b.userData.vx * dt;
     b.position.y += b.userData.vy * dt;
     b.position.z += b.userData.vz * dt;
     b.userData.life -= dt;
 
     let hit = false;
+
+    // Проверка попадания в машины (радиус 2.5)
     for (const car of cars) {
       if (car === drivingCar) continue;
-      if (car.position.distanceTo(b.position) < 2) {
+      if (car.position.distanceTo(b.position) < 2.5) {
         explode(car.position.x, 1, car.position.z, 0xffaa00, 15);
         scene.remove(car);
         cars.splice(cars.indexOf(car), 1);
@@ -896,13 +963,39 @@ function updateBullets(dt) {
       }
     }
 
+    // ИСПРАВЛЕНО: попадание в пешеходов (радиус 1.2 вместо 1, проверка по 3D)
     if (!hit) {
       for (const p of pedestrians) {
         if (!p.userData.alive) continue;
-        if (p.position.distanceTo(b.position) < 1) {
+        // Позиция центра пешехода (на высоте 1)
+        const pedCenter = p.position.clone();
+        pedCenter.y += 1;
+        // Проверяем расстояние от пули до центра
+        if (pedCenter.distanceTo(b.position) < 1.2) {
           p.userData.alive = false;
           p.visible = false;
-          explode(p.position.x, 1, p.position.z, 0xcc0000, 10);
+          explode(p.position.x, 1, p.position.z, 0xcc0000, 15);
+          wanted = Math.min(wanted + 1, 5);
+          updateWanted();
+          money += 10;
+          updateMoney();
+          hit = true;
+          break;
+        }
+      }
+    }
+
+    // ИСПРАВЛЕНО: попадание в полицию
+    if (!hit) {
+      for (const pc of policeCars) {
+        if (pc === drivingCar) continue;
+        if (pc.position.distanceTo(b.position) < 2.5) {
+          explode(pc.position.x, 1, pc.position.z, 0xff0000, 20);
+          scene.remove(pc);
+          policeCars.splice(policeCars.indexOf(pc), 1);
+          cars.splice(cars.indexOf(pc), 1);
+          money += 100;
+          updateMoney();
           wanted = Math.min(wanted + 1, 5);
           updateWanted();
           hit = true;
@@ -1053,6 +1146,7 @@ const actionBtn = document.getElementById('action-btn');
 const shootBtn = document.getElementById('shoot-btn');
 const raceBtn = document.getElementById('race-btn');
 const heliBtn = document.getElementById('heli-btn');
+const boatBtn = document.getElementById('boat-btn');
 const heliUpBtn = document.getElementById('heli-up-btn');
 const heliDownBtn = document.getElementById('heli-down-btn');
 const crosshair = document.getElementById('crosshair');
@@ -1061,7 +1155,9 @@ let nearestCar = null;
 let nearestHeli = null;
 let drivingCar = null;
 let flyingHeli = null;
+let ridingBoat = null;
 let carSpeed = 0;
+let boatSpeed = 0;
 
 actionBtn.addEventListener('touchstart', e => { e.preventDefault(); doAction(); }, { passive: false });
 actionBtn.addEventListener('click', e => { e.preventDefault(); doAction(); });
@@ -1071,8 +1167,9 @@ raceBtn.addEventListener('touchstart', e => { e.preventDefault(); startRace(); }
 raceBtn.addEventListener('click', e => { e.preventDefault(); startRace(); });
 heliBtn.addEventListener('touchstart', e => { e.preventDefault(); doHeli(); }, { passive: false });
 heliBtn.addEventListener('click', e => { e.preventDefault(); doHeli(); });
+boatBtn.addEventListener('touchstart', e => { e.preventDefault(); doBoat(); }, { passive: false });
+boatBtn.addEventListener('click', e => { e.preventDefault(); doBoat(); });
 
-// Кнопки высоты
 let heliUp = false, heliDown = false;
 heliUpBtn.addEventListener('touchstart', e => { e.preventDefault(); heliUp = true; }, { passive: false });
 heliUpBtn.addEventListener('touchend', e => { e.preventDefault(); heliUp = false; }, { passive: false });
@@ -1088,6 +1185,7 @@ window.addEventListener('keydown', e => {
   if (e.key === ' ' || e.key === 'f' || e.key === 'F') { e.preventDefault(); doShoot(); }
   if (e.key === 'r' || e.key === 'R') startRace();
   if (e.key === 'h' || e.key === 'H') doHeli();
+  if (e.key === 'b' || e.key === 'B') doBoat();
 });
 
 function doAction() {
@@ -1114,7 +1212,7 @@ function doAction() {
 }
 
 function doShoot() {
-  if (drivingCar || flyingHeli) return;
+  if (drivingCar || flyingHeli || ridingBoat) return;
   const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), playerGroup.rotation.y);
   const from = playerGroup.position.clone().add(new THREE.Vector3(0, 1.3, 0)).add(forward.clone().multiplyScalar(0.8));
   shoot(from, forward);
@@ -1124,7 +1222,6 @@ function doShoot() {
 
 function doHeli() {
   if (flyingHeli) {
-    // Приземлиться — на землю
     flyingHeli.position.y = 0.8;
     flyingHeli.userData.grounded = true;
     playerGroup.position.set(flyingHeli.position.x + 3, 0, flyingHeli.position.z);
@@ -1135,9 +1232,40 @@ function doHeli() {
   }
   if (nearestHeli) {
     flyingHeli = nearestHeli;
+    flyingHeli.position.y = 10;
     playerGroup.visible = false;
     showMessage('🚁 Взлетаем!', 900);
     beep(500, 0.2, 'sine', 0.1);
+  }
+}
+
+function doBoat() {
+  if (ridingBoat) {
+    // Выйти на берег
+    ridingBoat = null;
+    const bx = boat.position.x;
+    const bz = boat.position.z;
+    // Ищем ближайший берег
+    if (Math.abs(bz - RIVER_Y_START) < Math.abs(bz - RIVER_Y_END)) {
+      playerGroup.position.set(bx, 0, RIVER_Y_START - 2);
+    } else {
+      playerGroup.position.set(bx, 0, RIVER_Y_END + 2);
+    }
+    playerGroup.visible = true;
+    boatSpeed = 0;
+    showMessage('Вышел на берег', 800);
+    return;
+  }
+  if (boat) {
+    // Проверка близости к лодке
+    const d = Math.hypot(boat.position.x - playerGroup.position.x, boat.position.z - playerGroup.position.z);
+    if (d < 10) {
+      ridingBoat = boat;
+      playerGroup.visible = false;
+      boatSpeed = 0;
+      showMessage('🚤 Сел в лодку', 900);
+      beep(500, 0.15);
+    }
   }
 }
 
@@ -1158,12 +1286,10 @@ function collideBuilding(pos, radius) {
   return false;
 }
 
-// Проверка — стоит ли игрок/машина НА МОСТУ (можно ездить по реке)
 function isOnBridge(x, z) {
   return Math.abs(x - bridgeX) < bridgeWidth / 2 - 0.5 && z > RIVER_Y_START - 5 && z < RIVER_Y_END + 5;
 }
 
-// Проверка — в реке ли (и не на мосту)
 function isInRiver(x, z) {
   if (!isRiver(x, z)) return false;
   if (isOnBridge(x, z)) return false;
@@ -1185,11 +1311,10 @@ function updatePlayer(dt) {
   if (keys['arrowright']) dx = 1;
 
   const len = Math.hypot(dx, dz);
-  if (len > 0.1 && !drivingCar && !flyingHeli) {
+  if (len > 0.1 && !drivingCar && !flyingHeli && !ridingBoat) {
     dx /= len; dz /= len;
     const newX = playerGroup.position.x + dx * 5 * dt;
     const newZ = playerGroup.position.z + dz * 5 * dt;
-    // Не входим в реку (кроме моста)
     if (!isInRiver(newX, newZ)) {
       playerGroup.position.x = newX;
       playerGroup.position.z = newZ;
@@ -1237,7 +1362,6 @@ function updateCar(dt) {
   const newX = drivingCar.position.x + forward.x * carSpeed * dt;
   const newZ = drivingCar.position.z + forward.z * carSpeed * dt;
 
-  // Не едем в реку (кроме моста)
   if (!isInRiver(newX, newZ)) {
     drivingCar.position.x = newX;
     drivingCar.position.z = newZ;
@@ -1273,6 +1397,52 @@ function updateCar(dt) {
   playerGroup.position.copy(drivingCar.position);
 }
 
+// ============ ЛОДКА ============
+function updateBoat(dt) {
+  if (!ridingBoat) return;
+
+  let throttle = 0, steer = 0;
+  if (joystick.active) { throttle = -joystick.y; steer = joystick.x; }
+  if (keys['w'] || keys['arrowup']) throttle = 1;
+  if (keys['s'] || keys['arrowdown']) throttle = -1;
+  if (keys['a'] || keys['arrowleft']) steer = -1;
+  if (keys['d'] || keys['arrowright']) steer = 1;
+
+  const maxSpeed = 15;
+  const accel = 10;
+
+  if (throttle > 0) boatSpeed += accel * dt;
+  else if (throttle < 0) boatSpeed -= accel * dt;
+  else boatSpeed *= 0.95;
+
+  boatSpeed = Math.max(-maxSpeed * 0.5, Math.min(maxSpeed, boatSpeed));
+
+  if (Math.abs(boatSpeed) > 0.3) {
+    boat.rotation.y -= steer * 1.5 * dt * Math.sign(boatSpeed);
+  }
+
+  const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), boat.rotation.y);
+  const newX = boat.position.x + forward.x * boatSpeed * dt;
+  const newZ = boat.position.z + forward.z * boatSpeed * dt;
+
+  // Лодка плавает ТОЛЬКО по реке
+  if (!isRiver(newX, newZ) || isOnBridge(newX, newZ)) {
+    boatSpeed *= -0.3;
+    showMessage('Лодка только по реке', 800);
+  } else {
+    boat.position.x = newX;
+    boat.position.z = newZ;
+    boat.position.y = 0.3 + Math.sin(performance.now() * 0.002) * 0.05;
+  }
+
+  // Качка
+  boat.rotation.z = Math.sin(performance.now() * 0.002) * 0.03;
+
+  playerGroup.position.copy(boat.position);
+  playerGroup.position.y = 0;
+}
+
+// ============ ВЕРТОЛЁТ (ИСПРАВЛЕНО: не пролетает сквозь дома) ============
 function updateHeli(dt) {
   if (!flyingHeli) {
     helis.forEach(h => {
@@ -1291,11 +1461,39 @@ function updateHeli(dt) {
   if (keys['q'] || heliUp) flyingHeli.position.y += 10 * dt;
   if (keys['e'] || heliDown) flyingHeli.position.y -= 10 * dt;
 
+  // Автоподъём при движении вперёд
+  if (throttle > 0.1 && flyingHeli.position.y < 12 && !heliDown && !keys['e']) {
+    flyingHeli.position.y += 4 * dt;
+  }
+
   flyingHeli.userData.angle -= steer * 1.5 * dt;
   flyingHeli.rotation.y = flyingHeli.userData.angle;
 
   const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), flyingHeli.userData.angle);
-  flyingHeli.position.addScaledVector(forward, throttle * 25 * dt);
+  const newX = flyingHeli.position.x + forward.x * throttle * 25 * dt;
+  const newZ = flyingHeli.position.z + forward.z * throttle * 25 * dt;
+
+  // ИСПРАВЛЕНО: проверяем столкновение с домами ТОЛЬКО если низко
+  // (высота вертолёта меньше высоты дома)
+  let blocked = false;
+  for (const b of buildings) {
+    if (newX > b.x - b.w / 2 - 2 && newX < b.x + b.w / 2 + 2 &&
+        newZ > b.z - b.d / 2 - 2 && newZ < b.z + b.d / 2 + 2) {
+      if (flyingHeli.position.y < b.h + 1) {
+        blocked = true;
+        break;
+      }
+    }
+  }
+
+  if (!blocked) {
+    flyingHeli.position.x = newX;
+    flyingHeli.position.z = newZ;
+  } else {
+    if (flyingHeli.position.y < 12) {
+      showMessage('⬆️ Поднимись выше домов!', 800);
+    }
+  }
 
   flyingHeli.position.x = Math.max(-CITY_SIZE / 2, Math.min(CITY_SIZE / 2, flyingHeli.position.x));
   flyingHeli.position.z = Math.max(-CITY_SIZE / 2, Math.min(CITY_SIZE / 2, flyingHeli.position.z));
@@ -1310,16 +1508,30 @@ function updateHeli(dt) {
   playerGroup.position.y -= 3;
 }
 
+// ============ ПОЛИЦИЯ (ИСПРАВЛЕНО: обход домов + арест только если ВИДНА) ============
 function updatePolice(dt) {
   if (wanted === 0) return;
-  const target = drivingCar ? drivingCar.position : (flyingHeli ? flyingHeli.position : playerGroup.position);
+  const target = drivingCar ? drivingCar.position : (flyingHeli ? flyingHeli.position : (ridingBoat ? boat.position : playerGroup.position));
 
   policeCars.forEach(pc => {
     if (pc === drivingCar) return;
     const dir = target.clone().sub(pc.position);
     dir.y = 0;
     const dist = dir.length();
-    if (dist > 1 && dist < 80) {
+
+    if (dist > 60) {
+      // Патрулирование
+      pc.rotation.y += 0.3 * dt;
+      const nx = pc.position.x + Math.sin(pc.rotation.y) * 2 * dt;
+      const nz = pc.position.z + Math.cos(pc.rotation.y) * 2 * dt;
+      if (!isInRiver(nx, nz) && !isInsideBuilding(nx, nz, 2)) {
+        pc.position.x = nx;
+        pc.position.z = nz;
+      } else {
+        pc.rotation.y += 1.5 * dt;
+      }
+    } else if (dist > 1) {
+      // Погоня — обход домов
       dir.normalize();
       const targetAngle = Math.atan2(dir.x, dir.z);
       let diff = targetAngle - pc.rotation.y;
@@ -1327,31 +1539,71 @@ function updatePolice(dt) {
       while (diff < -Math.PI) diff += Math.PI * 2;
       pc.rotation.y += Math.sign(diff) * Math.min(Math.abs(diff), 1.8 * dt);
 
-      // ИСПРАВЛЕНО: медленная полиция (было 8 + wanted*3)
       const speed = 4 + wanted * 1.5;
-      const nx = pc.position.x + Math.sin(pc.rotation.y) * speed * dt;
-      const nz = pc.position.z + Math.cos(pc.rotation.y) * speed * dt;
-      // Не в реку (кроме моста)
-      if (!isInRiver(nx, nz)) {
+      let nx = pc.position.x + Math.sin(pc.rotation.y) * speed * dt;
+      let nz = pc.position.z + Math.cos(pc.rotation.y) * speed * dt;
+
+      if (isInsideBuilding(nx, nz, 2) || isInRiver(nx, nz)) {
+        const sideAngles = [Math.PI / 3, -Math.PI / 3, Math.PI / 2, -Math.PI / 2];
+        let moved = false;
+        for (const sa of sideAngles) {
+          const testAng = pc.rotation.y + sa;
+          const tx = pc.position.x + Math.sin(testAng) * speed * dt;
+          const tz = pc.position.z + Math.cos(testAng) * speed * dt;
+          if (!isInsideBuilding(tx, tz, 2) && !isInRiver(tx, tz)) {
+            pc.position.x = tx;
+            pc.position.z = tz;
+            pc.rotation.y = testAng;
+            moved = true;
+            break;
+          }
+        }
+        if (!moved) pc.rotation.y += Math.PI * dt;
+      } else {
         pc.position.x = nx;
         pc.position.z = nz;
       }
-      collideBuilding(pc.position, 1.5);
-
-      // УДАЛЕНО: стрельба полиции по игроку
-      // Блок if (wanted >= 2 && Math.random() < 0.02 && dist < 30) { ... } удалён
     }
 
+    pc.position.x = Math.max(-CITY_SIZE / 2, Math.min(CITY_SIZE / 2, pc.position.x));
+    pc.position.z = Math.max(-CITY_SIZE / 2, Math.min(CITY_SIZE / 2, pc.position.z));
+
+    // Мигалка
     if (pc.userData.sirenR) {
       const t = performance.now() * 0.005;
       pc.userData.sirenR.material.color.setHex(Math.sin(t) > 0 ? 0xff0000 : 0x440000);
       pc.userData.sirenB.material.color.setHex(Math.sin(t) > 0 ? 0x000044 : 0x0000ff);
+
+      if (pc.userData.beacon) {
+        const pulse = 0.6 + Math.sin(performance.now() * 0.008) * 0.4;
+        pc.userData.beacon.scale.setScalar(pulse);
+        pc.userData.beacon.position.y = 3 + Math.sin(performance.now() * 0.004) * 0.5;
+      }
+      if (pc.userData.policeLight) {
+        pc.userData.policeLight.intensity = 1.5 + Math.sin(performance.now() * 0.008) * 1;
+      }
     }
 
-    if (pc.position.distanceTo(target) < 3 && wanted >= 1) {
-      endGame('Тебя поймала полиция!');
+    // АРЕСТ: только если полиция РЯДОМ и ВИДНА
+    if (pc.position.distanceTo(target) < 4 && wanted >= 1 && !flyingHeli) {
+      if (isPoliceVisible(pc.position)) {
+        endGame('Тебя поймала полиция!');
+      }
     }
   });
+}
+
+function isPoliceVisible(policePos) {
+  if (playerGroup.position.distanceTo(policePos) > 20) return false;
+  if (camera.position.distanceTo(policePos) > 25) return false;
+  // Проверка — есть ли дом между игроком и полицией
+  for (const b of buildings) {
+    const distToBuilding = Math.hypot(policePos.x - b.x, policePos.z - b.z);
+    if (distToBuilding < Math.max(b.w, b.d) / 2 + 2) {
+      if (playerGroup.position.distanceTo(policePos) > 12) return false;
+    }
+  }
+  return true;
 }
 
 function updatePedestrians(dt) {
@@ -1405,7 +1657,7 @@ function updateMission(dt) {
     missionMarker.userData.ring.scale.setScalar(1 + (performance.now() * 0.001) % 1);
     missionMarker.userData.ring.material.opacity = 0.8 - ((performance.now() * 0.001) % 1) * 0.8;
   }
-  const target = drivingCar ? drivingCar.position : playerGroup.position;
+  const target = drivingCar ? drivingCar.position : (ridingBoat ? boat.position : playerGroup.position);
   if (target.distanceTo(missionMarker.position) < 3) {
     money += 100;
     updateMoney();
@@ -1480,6 +1732,12 @@ function updateCamera(dt) {
     const target = flyingHeli.position.clone().add(camOffset);
     camera.position.lerp(target, 0.1);
     camera.lookAt(flyingHeli.position);
+  } else if (ridingBoat) {
+    const camOffset = new THREE.Vector3(0, 6, -10);
+    camOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), boat.rotation.y);
+    const target = boat.position.clone().add(camOffset);
+    camera.position.lerp(target, 0.12);
+    camera.lookAt(boat.position.clone().add(new THREE.Vector3(0, 1, 0)));
   } else if (drivingCar) {
     const camOffset = new THREE.Vector3(0, 7, -11);
     camOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), drivingCar.rotation.y);
@@ -1513,7 +1771,7 @@ function drawMinimap() {
   const scale = MM_SIZE / CITY_SIZE;
   const cx = MM_SIZE / 2;
   const cy = MM_SIZE / 2;
-  const target = flyingHeli ? flyingHeli.position : (drivingCar ? drivingCar.position : playerGroup.position);
+  const target = flyingHeli ? flyingHeli.position : (ridingBoat ? boat.position : (drivingCar ? drivingCar.position : playerGroup.position));
 
   // Река
   mctx.fillStyle = 'rgba(50,120,200,0.7)';
@@ -1535,16 +1793,20 @@ function drawMinimap() {
     }
   });
 
-  // Полиция
-  mctx.fillStyle = '#ff0000';
+  // Полиция — крупнее + пульсация
   policeCars.forEach(pc => {
     if (pc === drivingCar) return;
     const dx = (pc.position.x - target.x) * scale;
     const dz = (pc.position.z - target.z) * scale;
     if (Math.abs(dx) < MM_SIZE / 2 && Math.abs(dz) < MM_SIZE / 2) {
+      const pulse = 4 + Math.sin(performance.now() * 0.005) * 1.5;
+      mctx.fillStyle = '#ff0000';
       mctx.beginPath();
-      mctx.arc(cx + dx, cy + dz, 3, 0, Math.PI * 2);
+      mctx.arc(cx + dx, cy + dz, pulse, 0, Math.PI * 2);
       mctx.fill();
+      mctx.strokeStyle = '#ffffff';
+      mctx.lineWidth = 1.5;
+      mctx.stroke();
     }
   });
 
@@ -1560,7 +1822,7 @@ function drawMinimap() {
     }
   }
 
-  // ВЕРТОЛЁТЫ (фиолетовые)
+  // Вертолёты
   mctx.fillStyle = '#b464ff';
   helis.forEach(h => {
     const dx = (h.position.x - target.x) * scale;
@@ -1572,7 +1834,19 @@ function drawMinimap() {
     }
   });
 
-  // Чекпоинты гонки
+  // Лодка
+  if (boat) {
+    const dx = (boat.position.x - target.x) * scale;
+    const dz = (boat.position.z - target.z) * scale;
+    if (Math.abs(dx) < MM_SIZE / 2 && Math.abs(dz) < MM_SIZE / 2) {
+      mctx.fillStyle = '#00d4ff';
+      mctx.beginPath();
+      mctx.arc(cx + dx, cy + dz, 4, 0, Math.PI * 2);
+      mctx.fill();
+    }
+  }
+
+  // Чекпоинты
   checkpoints.forEach((cp, i) => {
     const dx = (cp.position.x - target.x) * scale;
     const dz = (cp.position.z - target.z) * scale;
@@ -1587,7 +1861,7 @@ function drawMinimap() {
   // Игрок
   mctx.save();
   mctx.translate(cx, cy);
-  const angle = flyingHeli ? flyingHeli.userData.angle : (drivingCar ? drivingCar.rotation.y : playerGroup.rotation.y);
+  const angle = flyingHeli ? flyingHeli.userData.angle : (ridingBoat ? boat.rotation.y : (drivingCar ? drivingCar.rotation.y : playerGroup.rotation.y));
   mctx.rotate(angle);
   mctx.fillStyle = '#4dff88';
   mctx.beginPath();
@@ -1620,8 +1894,10 @@ window.resetGame = function() {
   wanted = 0;
   gameOver = false;
   carSpeed = 0;
+  boatSpeed = 0;
   drivingCar = null;
   flyingHeli = null;
+  ridingBoat = null;
   raceActive = false;
   updateMoney();
   updateWanted();
@@ -1636,13 +1912,19 @@ window.resetGame = function() {
     for (let a = 0; a < 30; a++) {
       px = (Math.random() - 0.5) * CITY_SIZE;
       pz = (Math.random() - 0.5) * CITY_SIZE;
-      if (!isRiver(px, pz)) break;
+      if (!isRiver(px, pz) && !isInsideBuilding(px, pz, 1)) break;
     }
     p.position.set(px, 0, pz);
   });
 
   policeCars.forEach(pc => {
-    pc.position.set((Math.random() - 0.5) * CITY_SIZE, 0, (Math.random() - 0.5) * CITY_SIZE);
+    let px, pz;
+    for (let a = 0; a < 30; a++) {
+      px = (Math.random() - 0.5) * CITY_SIZE;
+      pz = (Math.random() - 0.5) * CITY_SIZE;
+      if (!isRiver(px, pz) && !isInsideBuilding(px, pz, 3)) break;
+    }
+    pc.position.set(px, 0, pz);
   });
 
   checkpoints.forEach(c => {
@@ -1677,6 +1959,7 @@ function animate() {
 
   updatePlayer(dt);
   updateCar(dt);
+  updateBoat(dt);
   updateHeli(dt);
   updatePolice(dt);
   updatePedestrians(dt);
@@ -1699,7 +1982,7 @@ function animate() {
     actionBtn.style.display = 'none';
   }
 
-  if (!drivingCar && !flyingHeli) {
+  if (!drivingCar && !flyingHeli && !ridingBoat) {
     shootBtn.style.display = 'flex';
     crosshair.style.display = 'block';
   } else {
@@ -1707,7 +1990,7 @@ function animate() {
     crosshair.style.display = 'none';
   }
 
-  // Вертолёт — ИСПРАВЛЕНО: проверка по горизонтали, кнопки вверх/вниз
+  // Вертолёт
   if (flyingHeli) {
     heliBtn.style.display = 'flex';
     heliBtn.innerHTML = '⬇️<br>ПРИЗЕМЛИТЬ';
@@ -1719,7 +2002,6 @@ function animate() {
     heliUpBtn.style.display = 'none';
     heliDownBtn.style.display = 'none';
 
-    // ИСПРАВЛЕНО: горизонтальная проверка близости к вертолёту
     nearestHeli = null;
     let minD = 10;
     helis.forEach(h => {
@@ -1733,6 +2015,24 @@ function animate() {
       heliBtn.innerHTML = '🚁<br>СЕСТЬ';
       heliBtn.style.background = 'rgba(180,100,255,0.9)';
     }
+  }
+
+  // Лодка
+  if (ridingBoat) {
+    boatBtn.style.display = 'flex';
+    boatBtn.innerHTML = '🚶<br>ВЫЙТИ';
+    boatBtn.style.background = 'rgba(100,100,100,0.9)';
+  } else if (boat) {
+    const d = Math.hypot(boat.position.x - playerGroup.position.x, boat.position.z - playerGroup.position.z);
+    if (d < 10) {
+      boatBtn.style.display = 'flex';
+      boatBtn.innerHTML = '🚤<br>СЕСТЬ';
+      boatBtn.style.background = 'rgba(0,150,200,0.9)';
+    } else {
+      boatBtn.style.display = 'none';
+    }
+  } else {
+    boatBtn.style.display = 'none';
   }
 
   raceBtn.style.display = raceActive ? 'none' : 'flex';
