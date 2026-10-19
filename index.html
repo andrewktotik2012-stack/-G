@@ -2657,7 +2657,16 @@ function updateFPS() {
 // ============ АНИМАЦИЯ ============
 const clock = new THREE.Clock();
 
-function animate() {
+// Принудительный обработчик для кнопки выхода из магазина
+document.getElementById('exit-shop-btn').addEventListener('touchstart', function(e) {
+  e.preventDefault();
+  exitShop();
+}, { passive: false });
+
+document.getElementById('exit-shop-btn').addEventListener('click', function(e) {
+  e.preventDefault();
+  exitShop();
+});function animate() {
   requestAnimationFrame(animate);
   if (gameOver || inHospital) {
     renderer.render(scene, camera);
