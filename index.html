@@ -3,47 +3,49 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-<title>Mini-GTA 3D v5.2 STABLE</title>
+<title>Mini-GTA 3D ULTIMATE</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: -apple-system, Arial, sans-serif; touch-action: none; user-select: none; -webkit-user-select: none; }
   canvas { display: block; }
+  
   #hud { position: absolute; top: 0; left: 0; right: 0; padding: 8px 12px; color: #fff; font-size: 14px; display: flex; justify-content: space-between; align-items: flex-start; text-shadow: 0 2px 6px #000; pointer-events: none; z-index: 10; font-weight: 600; }
   #hud .money { color: #4dff88; }
   #hud .wanted { color: #ff4444; }
   #hud .task { background: rgba(0,0,0,0.55); padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: 400; max-width: 58vw; text-align: center; border-left: 3px solid #ffdd00; }
-  
-  .action-btn { position: absolute; width: 70px; height: 70px; border-radius: 50%; display: none; align-items: center; justify-content: center; text-align: center; font-weight: 800; font-size: 10px; z-index: 20; border: 3px solid #fff; letter-spacing: 0.3px; color: #000; }
+
+  .action-btn { position: absolute; width: 65px; height: 65px; border-radius: 50%; display: none; align-items: center; justify-content: center; text-align: center; font-weight: 800; font-size: 10px; z-index: 20; border: 2px solid #fff; letter-spacing: 0.3px; color: #000; }
   #action-btn { bottom: 25px; right: 18px; background: rgba(255, 220, 0, 0.9); }
-  #shoot-btn { bottom: 25px; right: 95px; background: rgba(255, 80, 80, 0.9); color: #fff; }
-  #heli-btn { bottom: 100px; right: 18px; background: rgba(180, 100, 255, 0.9); color: #fff; }
-  #boat-btn { bottom: 100px; right: 95px; background: rgba(0, 150, 200, 0.9); color: #fff; }
-  
+  #shoot-btn { bottom: 25px; right: 90px; background: rgba(255, 80, 80, 0.9); color: #fff; }
+  #weapon-btn { bottom: 95px; right: 18px; background: rgba(80, 200, 80, 0.9); color: #fff; }
+  #heli-btn { bottom: 95px; right: 90px; background: rgba(180, 100, 255, 0.9); color: #fff; }
+  #boat-btn { bottom: 165px; right: 18px; background: rgba(0, 150, 200, 0.9); color: #fff; }
+
   #joystick-zone { position: absolute; bottom: 0; left: 0; width: 50%; height: 50%; z-index: 15; }
   #joystick-base { position: absolute; width: 120px; height: 120px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.1); display: none; pointer-events: none; }
-  #joystick-knob { position: absolute; width: 55px; height: 55px; border-radius: 50%; background: rgba(255,255,255,0.75); box-shadow: 0 0 15px rgba(255,255,255,0.7); display: none; pointer-events: none; }
-  
+  #joystick-knob { position: absolute; width: 55px; height: 55px; border-radius: 50%; background: rgba(255,255,255,0.75); display: none; pointer-events: none; }
+
   #loading { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #4dff88; font-size: 20px; background: #000; z-index: 100; }
   #loading .spinner { width: 60px; height: 60px; border: 4px solid rgba(77,255,136,0.3); border-top-color: #4dff88; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  
+
   #message { position: absolute; top: 22%; left: 50%; transform: translateX(-50%); color: #fff; font-size: 16px; font-weight: 800; text-shadow: 0 0 15px #000; opacity: 0; transition: opacity 0.25s; pointer-events: none; z-index: 30; text-align: center; white-space: nowrap; padding: 8px 16px; background: rgba(0,0,0,0.5); border-radius: 10px; border: 2px solid rgba(255,255,255,0.3); }
-  
-  #minimap { position: absolute; top: 60px; right: 10px; width: 100px; height: 100px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.6); background: rgba(0,0,0,0.5); z-index: 12; box-shadow: 0 0 15px rgba(0,0,0,0.6); }
-  
-  #top-btns { position: absolute; top: 60px; left: 10px; display: flex; flex-direction: column; gap: 6px; z-index: 20; }
-  .top-btn { width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.5); color: #fff; font-size: 18px; display: none; align-items: center; justify-content: center; font-weight: bold; }
-  
+
+  #minimap { position: absolute; top: 60px; right: 10px; width: 100px; height: 100px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.6); background: rgba(0,0,0,0.5); z-index: 12; }
+
+  #shop-ui { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); border: 2px solid #ffaa00; border-radius: 15px; padding: 15px; color: #fff; text-align: center; display: none; z-index: 40; width: 85%; max-width: 320px; max-height: 80vh; overflow-y: auto; }
+  #shop-ui h2 { color: #ffaa00; margin-bottom: 10px; }
+  #shop-ui button { display: flex; justify-content: space-between; width: 100%; padding: 10px; margin: 4px 0; background: #333; color: #fff; border: 1px solid #555; border-radius: 5px; font-size: 13px; text-align: left; }
+  #shop-ui button:active { background: #555; }
+  #shop-ui button.bought { background: #228822; border-color: #44ff44; }
+
   #fps-counter { position: absolute; top: 5px; right: 5px; color: #0f0; font-size: 11px; font-family: monospace; z-index: 999; background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; }
-  #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 36px; height: 36px; border: 2px solid rgba(255,80,80,0.8); border-radius: 50%; display: none; z-index: 11; pointer-events: none; }
-  #crosshair::before, #crosshair::after { content: ''; position: absolute; background: rgba(255,80,80,0.8); }
-  #crosshair::before { top: 50%; left: -8px; right: -8px; height: 2px; transform: translateY(-50%); }
-  #crosshair::after { left: 50%; top: -8px; bottom: -8px; width: 2px; transform: translateX(-50%); }
+  #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 30px; height: 30px; border: 2px solid rgba(255,80,80,0.8); border-radius: 50%; display: none; z-index: 11; pointer-events: none; }
 </style>
 </head>
 <body>
 
-<div id="loading"><div class="spinner"></div>Загрузка v5.2...</div>
+<div id="loading"><div class="spinner"></div>Загрузка города...</div>
 
 <div id="hud" style="display:none">
   <div>💰 <span class="money" id="money">0</span><br>⭐ <span class="wanted" id="wanted" style="display:none">0</span></div>
@@ -51,11 +53,8 @@
 </div>
 
 <canvas id="minimap" width="200" height="200"></canvas>
-<div id="top-btns">
-  <div class="top-btn" id="reset-btn">↻</div>
-</div>
-<div id="crosshair"></div>
 <div id="fps-counter">FPS: --</div>
+<div id="crosshair"></div>
 
 <div id="joystick-zone" style="display:none">
   <div id="joystick-base"></div>
@@ -64,10 +63,21 @@
 
 <div id="action-btn" class="action-btn">СЕСТЬ</div>
 <div id="shoot-btn" class="action-btn">🔫</div>
+<div id="weapon-btn" class="action-btn">СМЕНИТЬ</div>
 <div id="heli-btn" class="action-btn">🚁<br>СЕСТЬ</div>
 <div id="boat-btn" class="action-btn">🚤<br>СЕСТЬ</div>
 
 <div id="message"></div>
+
+<div id="shop-ui">
+  <h2>🏪 Оружейный магазин</h2>
+  <button onclick="buyWeapon('mine', 300)" id="btn-mine">💣 Мина <span>300</span></button>
+  <button onclick="buyWeapon('rocket', 1000)" id="btn-rocket">🚀 Ракетница <span>1000</span></button>
+  <button onclick="buyWeapon('auto', 1500)" id="btn-auto">🔫 Автомат <span>1500</span></button>
+  <button onclick="buyWeapon('dynamite', 500)" id="btn-dynamite">🧨 Динамит <span>500</span></button>
+  <button onclick="buyWeapon('health', 200)" id="btn-health">❤️ Аптечка <span>200</span></button>
+  <button onclick="closeShop()" style="background:#a00; margin-top:10px; justify-content:center;">Закрыть</button>
+</div>
 
 <script type="importmap">
 { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
@@ -98,11 +108,9 @@ scene.add(sun);
 
 // ============ КОНСТАНТЫ ============
 const CITY_SIZE = 200;
-const RIVER_WIDTH = 20;
 const RIVER_Y_START = -10;
 const RIVER_Y_END = 10;
 const BLOCK = 30;
-const ROAD_WIDTH = 10;
 const ISLAND_X = 100;
 const ISLAND_Z = 0;
 const ISLAND_R = 20;
@@ -135,9 +143,9 @@ ground.receiveShadow = true;
 scene.add(ground);
 
 // Река
-const water = new THREE.Mesh(new THREE.PlaneGeometry(500, RIVER_WIDTH), new THREE.MeshStandardMaterial({ color: 0x2a6aae, metalness: 0.5, roughness: 0.3, transparent: true, opacity: 0.85 }));
+const water = new THREE.Mesh(new THREE.PlaneGeometry(500, 20), new THREE.MeshStandardMaterial({ color: 0x2a6aae, metalness: 0.5, roughness: 0.3, transparent: true, opacity: 0.85 }));
 water.rotation.x = -Math.PI / 2;
-water.position.set(0, 0.05, (RIVER_Y_START + RIVER_Y_END) / 2);
+water.position.set(0, 0.05, 0);
 scene.add(water);
 
 // Остров
@@ -169,11 +177,10 @@ for (let bx = -CITY_SIZE / 2; bx < CITY_SIZE / 2; bx += BLOCK) {
     if (qcx < -50 && qcz < -60) continue; // горы
     if (qcx < -50 && qcz > 50) continue; // лес
     
-    // Дороги
     const roadMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
-    const roadH = new THREE.Mesh(new THREE.PlaneGeometry(BLOCK, ROAD_WIDTH), roadMat);
+    const roadH = new THREE.Mesh(new THREE.PlaneGeometry(BLOCK, 10), roadMat);
     roadH.rotation.x = -Math.PI / 2; roadH.position.set(bx + BLOCK / 2, 0.01, bz); scene.add(roadH);
-    const roadV = new THREE.Mesh(new THREE.PlaneGeometry(BLOCK, ROAD_WIDTH), roadMat);
+    const roadV = new THREE.Mesh(new THREE.PlaneGeometry(BLOCK, 10), roadMat);
     roadV.rotation.x = -Math.PI / 2; roadV.rotation.z = Math.PI / 2; roadV.position.set(bx, 0.01, bz + BLOCK / 2); scene.add(roadV);
 
     if (Math.random() < 0.7) {
@@ -188,19 +195,26 @@ for (let i = 0; i < 30; i++) {
   const tree = new THREE.Mesh(new THREE.ConeGeometry(1.5, 5, 5), new THREE.MeshStandardMaterial({ color: 0x1a5a1a }));
   tree.position.set(tx, 3.5, tz);
   scene.add(tree);
+  trees.push({ x: tx, z: tz, r: 1.5 });
 }
+
+// Мосты
+const bridgeMat = new THREE.MeshStandardMaterial({ color: 0x888888 });
+const b1 = new THREE.Mesh(new THREE.BoxGeometry(14, 1, 22), bridgeMat);
+b1.position.set(0, 0.5, 0); scene.add(b1);
+const b2 = new THREE.Mesh(new THREE.BoxGeometry(40, 1, 4), bridgeMat);
+b2.position.set(ISLAND_X / 2 + 30, 0.5, 0); scene.add(b2);
 
 // ============ МАГАЗИН ============
 const shopBuilding = { x: 50, z: 25, w: 12, d: 12, h: 8 };
 makeBuilding(50, 25, 12, 12, 8, true, 0xffcc44);
 const shopMesh = buildings[buildings.length-1].mesh;
 
-// Маркер магазина
 const shopMarker = new THREE.Mesh(new THREE.CylinderGeometry(2.5, 2.5, 0.1, 12), new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.6 }));
 shopMarker.position.set(50, 0.1, 25 + 6 + 2);
 scene.add(shopMarker);
 
-// ============ ИНТЕРЬЕР ============
+// ============ ИНТЕРЬЕР МАГАЗИНА ============
 const shopInterior = new THREE.Group();
 shopInterior.visible = false;
 const intFloor = new THREE.Mesh(new THREE.PlaneGeometry(18, 18), new THREE.MeshStandardMaterial({ color: 0x8B7355 }));
@@ -218,45 +232,39 @@ seller.position.set(0, 0.75, -3); shopInterior.add(seller);
 
 const shopItems3D = [];
 [
-  { id: 'rocket', name: '🚀 Ракетница', price: 1000, color: 0xff4444, x: -2.7 },
-  { id: 'armor', name: '🛡️ Броня', price: 500, color: 0x4488ff, x: -0.9 },
-  { id: 'health', name: '❤️ Аптечка', price: 200, color: 0xff44aa, x: 0.9 },
-  { id: 'ammo', name: '🔫 Патроны', price: 100, color: 0xffdd44, x: 2.7 }
-].forEach(g => {
+  { id: 'mine', name: '💣 Мина', price: 300, color: 0xff4444, x: -2.7 },
+  { id: 'rocket', name: '🚀 Ракетница', price: 1000, color: 0xff8800, x: -0.9 },
+  { id: 'auto', name: '🔫 Автомат', price: 1500, color: 0x44ff44, x: 0.9 },
+  { id: 'dynamite', name: '🧨 Динамит', price: 500, color: 0xaa44ff, x: 2.7 },
+  { id: 'health', name: '❤️ Аптечка', price: 200, color: 0xff44aa, x: 0 } // Второй ряд
+].forEach((g, i) => {
   const item = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.5, 0.7), new THREE.MeshStandardMaterial({ color: g.color, emissive: g.color, emissiveIntensity: 0.3 }));
-  item.position.set(g.x, 1.65, 0);
+  item.position.set(g.x, 1.65, i === 4 ? -1.5 : 0);
   item.userData = g;
   shopInterior.add(item);
   shopItems3D.push(item);
 });
 
 // ============ ЖИВНОСТЬ ============
-// Лыжник (патрулирует горы)
 const skier = new THREE.Group();
 const skierBody = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1, 0.3), new THREE.MeshStandardMaterial({ color: 0x00ff00 }));
-skierBody.position.y = 1;
-skier.add(skierBody);
+skierBody.position.y = 1; skier.add(skierBody);
 const skis = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.1, 2), new THREE.MeshStandardMaterial({ color: 0xaaaaaa }));
-skis.position.y = 0.1;
-skier.add(skis);
+skis.position.y = 0.1; skier.add(skis);
 skier.position.set(-50, 0, -80);
 scene.add(skier);
 
-// Медведи (ходят по лесу)
 const bears = [];
 for (let i = 0; i < 3; i++) {
   const bear = new THREE.Group();
   const bBody = new THREE.Mesh(new THREE.SphereGeometry(0.6, 8, 8), new THREE.MeshStandardMaterial({ color: 0x553311 }));
-  bBody.scale.set(1, 1.2, 1.5);
-  bBody.position.y = 0.8;
-  bear.add(bBody);
+  bBody.scale.set(1, 1.2, 1.5); bBody.position.y = 0.8; bear.add(bBody);
   bear.position.set(-80 + i * 10, 0, 80 + Math.random() * 20);
   bear.userData = { angle: Math.random() * Math.PI * 2, speed: 3 };
-  scene.add(bear);
-  bears.push(bear);
+  scene.add(bear); bears.push(bear);
 }
 
-// ============ ИГРОК И ТРАНСПОРТ ============
+// ============ ИГРОК ============
 const playerGroup = new THREE.Group();
 const torso = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.2, 0.4), new THREE.MeshStandardMaterial({ color: 0x2255cc }));
 torso.position.y = 1.1; playerGroup.add(torso);
@@ -272,6 +280,7 @@ for (let i = 0; i < 2; i++) {
 playerGroup.position.set(20, 0, 20);
 scene.add(playerGroup);
 
+// ============ ТРАНСПОРТ ============
 const cars = [];
 function makeCar(x, z, color, isCop = false) {
   const g = new THREE.Group();
@@ -282,16 +291,12 @@ function makeCar(x, z, color, isCop = false) {
   g.position.set(x, 0, z);
   g.rotation.y = Math.random() * Math.PI * 2;
   g.userData = { isCop };
-  scene.add(g);
-  cars.push(g);
-  return g;
+  scene.add(g); cars.push(g); return g;
 }
-
 for(let i=0; i<15; i++) makeCar((Math.random()-0.5)*150, (Math.random()-0.5)*150, `hsl(${Math.random()*360}, 70%, 50%)`);
 const cops = [];
 for(let i=0; i<4; i++) cops.push(makeCar((Math.random()-0.5)*150, (Math.random()-0.5)*150, 0x111111, true));
 
-// Вертолёты
 const helis = [];
 function makeHeli(x, z) {
   const g = new THREE.Group();
@@ -301,13 +306,15 @@ function makeHeli(x, z) {
   rot.position.y = 1; g.add(rot);
   g.position.set(x, 8, z);
   g.userData = { rot, angle: 0 };
-  scene.add(g);
-  helis.push(g);
-  return g;
+  scene.add(g); helis.push(g); return g;
 }
 makeHeli(30, 30); makeHeli(-30, 30);
 
-// Лодка
+// Полицейский вертолет
+const copHeli = makeHeli(0, 0);
+copHeli.userData.isCop = true;
+copHeli.visible = false;
+
 let boat = null;
 function makeBoat() {
   const g = new THREE.Group();
@@ -315,9 +322,7 @@ function makeBoat() {
   b.position.y = 0.3; g.add(b);
   g.position.set(-30, 0.3, 0);
   g.userData = { angle: 0 };
-  scene.add(g);
-  boat = g;
-  return g;
+  scene.add(g); boat = g; return g;
 }
 makeBoat();
 
@@ -329,26 +334,66 @@ for (let i = 0; i < 30; i++) {
   b.position.y = 0.8; p.add(b);
   p.position.set((Math.random()-0.5)*150, 0, (Math.random()-0.5)*150);
   p.userData = { angle: Math.random()*Math.PI*2 };
-  scene.add(p);
-  peds.push(p);
+  scene.add(p); peds.push(p);
 }
 
-// Пули
-const bullets = [];
+// ============ СНАРЯДЫ И ОРУЖИЕ ============
+const bullets = []; // Пули
+const rockets = []; // Ракеты
+const grenades = []; // Гранаты
+const dynamites = []; // Динамит
+const mines = []; // Мины
+const particles = []; // Взрывы
+
+// Оружие игрока
+let currentWeapon = 'pistol';
+const weapons = {
+  pistol: { name: 'Пистолет', ammo: -1, cooldown: 0.2, timer: 0 },
+  grenade: { name: 'Граната', ammo: 5, cooldown: 1.0, timer: 0 },
+  mine: { name: 'Мина', ammo: 0, cooldown: 1.0, timer: 0 },
+  rocket: { name: 'Ракетница', ammo: 0, cooldown: 1.5, timer: 0 },
+  auto: { name: 'Автомат', ammo: 0, cooldown: 0.1, timer: 0 },
+  dynamite: { name: 'Динамит', ammo: 0, cooldown: 1.0, timer: 0 }
+};
 
 // ============ ЛОГИКА ============
-let money = 0, wanted = 0, gameOver = false, inShop = false, isSwimming = false;
+let money = 500; // Начальные деньги
+let wanted = 0, gameOver = false, inShop = false, isSwimming = false;
 let nearestCar = null, drivingCar = null, flyingHeli = null, ridingBoat = null;
 let carSpeed = 0, boatSpeed = 0, nearShopItem = null;
 
-// UI
 const uiMoney = document.getElementById('money');
 const uiWanted = document.getElementById('wanted');
 const uiTask = document.getElementById('task');
 const uiMsg = document.getElementById('message');
-const uiShopHint = document.getElementById('shop-ui');
+const shopUI = document.getElementById('shop-ui');
 function updateMoney() { uiMoney.textContent = money; }
 function showMsg(text) { uiMsg.textContent = text; uiMsg.style.opacity = 1; clearTimeout(uiMsg.t); uiMsg.t = setTimeout(() => uiMsg.style.opacity = 0, 1500); }
+
+// Смена оружия
+function nextWeapon() {
+  const list = ['pistol', 'grenade', 'mine', 'rocket', 'auto', 'dynamite'].filter(w => w === 'pistol' || weapons[w].ammo > 0);
+  let idx = list.indexOf(currentWeapon);
+  if (idx === -1) idx = 0;
+  currentWeapon = list[(idx + 1) % list.length];
+  showMsg('Оружие: ' + weapons[currentWeapon].name + ' (' + (weapons[currentWeapon].ammo === -1 ? '∞' : weapons[currentWeapon].ammo) + ')');
+}
+
+// Покупка
+window.buyWeapon = (id, price) => {
+  if (money < price) { showMsg('Мало денег!'); return; }
+  money -= price;
+  updateMoney();
+  if (id === 'health') {
+    showMsg('Здоровье восстановлено!');
+  } else {
+    weapons[id].ammo += (id === 'auto' ? 100 : (id === 'grenade' ? 3 : 2));
+    showMsg('Куплено: ' + weapons[id].name);
+  }
+  document.getElementById('btn-' + id).classList.add('bought');
+  setTimeout(() => document.getElementById('btn-' + id).classList.remove('bought'), 500);
+};
+window.closeShop = () => { shopUI.style.display = 'none'; inShop = false; shopInterior.visible = false; shopMesh.visible = true; shopMarker.visible = true; playerGroup.position.set(50, 0, 25 + 6 + 4); };
 
 // Управление
 const joy = { active: false, x: 0, y: 0, startX: 0, startY: 0 };
@@ -382,15 +427,13 @@ const actBtn = document.getElementById('action-btn');
 const shootBtn = document.getElementById('shoot-btn');
 const heliBtn = document.getElementById('heli-btn');
 const boatBtn = document.getElementById('boat-btn');
+const weapBtn = document.getElementById('weapon-btn');
 
-function bind(b, fn) {
-  b.addEventListener('touchstart', e => { e.preventDefault(); fn(); }, { passive: false });
-  b.addEventListener('click', e => { e.preventDefault(); fn(); });
-}
+function bind(b, fn) { b.addEventListener('touchstart', e => { e.preventDefault(); fn(); }, { passive: false }); b.addEventListener('click', e => { e.preventDefault(); fn(); }); }
 
 bind(actBtn, () => {
   if (inShop) return;
-  if (drivingCar) { drivingCar = null; playerGroup.visible = true; showMsg('Вышел'); }
+  if (drivingCar) { drivingCar = null; playerGroup.visible = true; }
   else if (nearestCar) { drivingCar = nearestCar; playerGroup.visible = false; carSpeed = 0; showMsg('Сел в машину'); }
 });
 bind(heliBtn, () => {
@@ -404,26 +447,105 @@ bind(heliBtn, () => {
 });
 bind(boatBtn, () => {
   if (inShop) return;
-  if (ridingBoat) { ridingBoat = null; playerGroup.position.set(boat.position.x, 0, RIVER_Y_START - 3); playerGroup.visible = true; }
+  if (ridingBoat) { ridingBoat = null; playerGroup.position.set(boat.position.x, 0, -15); playerGroup.visible = true; }
   else if (boat) {
     const d = Math.hypot(boat.position.x - playerGroup.position.x, boat.position.z - playerGroup.position.z);
     if (d < 10) { ridingBoat = boat; playerGroup.visible = false; showMsg('Сел в лодку'); }
   }
 });
+bind(weapBtn, nextWeapon);
+
+// Стрельба
 bind(shootBtn, () => {
-  if (inShop || flyingHeli) return;
-  const dir = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0,1,0), playerGroup.rotation.y);
-  const b = new THREE.Mesh(new THREE.SphereGeometry(0.2, 4, 4), new THREE.MeshBasicMaterial({ color: 0xffff00 }));
-  b.position.copy(playerGroup.position).add(new THREE.Vector3(0, 1.3, 0));
-  b.userData = { vx: dir.x*60, vz: dir.z*60, life: 1.5 };
-  scene.add(b); bullets.push(b);
+  if (inShop || flyingHeli || weapons[currentWeapon].timer > 0) return;
+  const w = weapons[currentWeapon];
+  if (w.ammo === 0) { showMsg('Нет патронов!'); return; }
+  if (w.ammo > 0) w.ammo--;
+  w.timer = w.cooldown;
+
+  const fwd = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0,1,0), playerGroup.rotation.y);
+  const startPos = playerGroup.position.clone().add(new THREE.Vector3(0, 1.3, 0));
+
+  if (currentWeapon === 'pistol' || currentWeapon === 'auto') {
+    const b = new THREE.Mesh(new THREE.SphereGeometry(0.15, 4, 4), new THREE.MeshBasicMaterial({ color: 0xffff00 }));
+    b.position.copy(startPos);
+    b.userData = { vx: fwd.x*80, vz: fwd.z*80, life: 1.0 };
+    scene.add(b); bullets.push(b);
+  } else if (currentWeapon === 'grenade') {
+    const g = new THREE.Mesh(new THREE.SphereGeometry(0.3, 6, 6), new THREE.MeshStandardMaterial({ color: 0x226622 }));
+    g.position.copy(startPos);
+    g.userData = { vx: fwd.x*20, vy: 5, vz: fwd.z*20, fuse: 2.0 };
+    scene.add(g); grenades.push(g);
+  } else if (currentWeapon === 'rocket') {
+    const r = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.8, 6), new THREE.MeshStandardMaterial({ color: 0xff2222 }));
+    r.rotation.x = Math.PI / 2; r.rotation.y = playerGroup.rotation.y;
+    r.position.copy(startPos);
+    r.userData = { vx: fwd.x*50, vz: fwd.z*50, life: 2.0 };
+    scene.add(r); rockets.push(r);
+  } else if (currentWeapon === 'mine') {
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.1, 8), new THREE.MeshStandardMaterial({ color: 0x888800 }));
+    m.position.copy(playerGroup.position); m.position.y = 0.05;
+    m.userData = { fuse: -1 }; // Ждет пока наступят
+    scene.add(m); mines.push(m);
+  } else if (currentWeapon === 'dynamite') {
+    const d = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.5, 6), new THREE.MeshStandardMaterial({ color: 0xff0000 }));
+    d.rotation.x = Math.PI / 2; d.rotation.y = playerGroup.rotation.y;
+    d.position.copy(startPos);
+    d.userData = { vx: fwd.x*15, vy: 3, vz: fwd.z*15, fuse: 3.0 };
+    scene.add(d); dynamites.push(d);
+  }
 });
 
-// Коллизии
+// Взрывы
+function createExplosion(x, z, radius, damage) {
+  const p = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 8), new THREE.MeshBasicMaterial({ color: 0xff4400, transparent: true, opacity: 0.8 }));
+  p.position.set(x, 1, z);
+  p.userData = { life: 0.5, max: 0.5, radius };
+  scene.add(p); particles.push(p);
+
+  // Урон домам
+  buildings.forEach(b => {
+    if (b.isShop || buildingHealth.get(b.mesh) === 999) return;
+    if (Math.hypot(b.x - x, b.z - z) < radius) {
+      const hp = (buildingHealth.get(b.mesh) || 3) - damage;
+      buildingHealth.set(b.mesh, hp);
+      if (hp <= 0) {
+        b.mesh.visible = false;
+        money += 50; updateMoney();
+      }
+    }
+  });
+
+  // Урон пешеходам и машинам
+  for (let i = peds.length - 1; i >= 0; i--) {
+    if (Math.hypot(peds[i].position.x - x, peds[i].position.z - z) < radius) {
+      scene.remove(peds[i]); peds.splice(i, 1);
+      wanted = Math.min(wanted + 1, 5); uiWanted.style.display = 'inline'; uiWanted.textContent = '⭐'.repeat(wanted);
+    }
+  }
+  for (let i = cars.length - 1; i >= 0; i--) {
+    if (Math.hypot(cars[i].position.x - x, cars[i].position.z - z) < radius) {
+      scene.remove(cars[i]); cars.splice(i, 1);
+    }
+  }
+
+  // Урон полиции
+  for (let i = cops.length - 1; i >= 0; i--) {
+    if (Math.hypot(cops[i].position.x - x, cops[i].position.z - z) < radius) {
+      scene.remove(cops[i]); cops.splice(i, 1);
+    }
+  }
+
+  // Урон игроку (если рядом)
+  if (Math.hypot(playerGroup.position.x - x, playerGroup.position.z - z) < radius) {
+    showMsg('Взрыв! Вы ранены');
+  }
+}
+
 function collide(pos, rad) {
   for (const b of buildings) {
     const hp = buildingHealth.get(b.mesh) || 0;
-    if (hp <= 0) continue;
+    if (hp <= 0 || !b.mesh.visible) continue;
     if (pos.x > b.x - b.w/2 - rad && pos.x < b.x + b.w/2 + rad && pos.z > b.z - b.d/2 - rad && pos.z < b.z + b.d/2 + rad) {
       const ox = pos.x - b.x, oz = pos.z - b.z;
       if (Math.abs(ox) > Math.abs(oz)) pos.x = b.x + Math.sign(ox) * (b.w/2 + rad);
@@ -431,37 +553,41 @@ function collide(pos, rad) {
       return true;
     }
   }
+  // Лес
+  for (const t of trees) {
+    if (Math.hypot(pos.x - t.x, pos.z - t.z) < t.r + rad) {
+      const angle = Math.atan2(pos.x - t.x, pos.z - t.z);
+      pos.x = t.x + Math.sin(angle) * (t.r + rad);
+      pos.z = t.z + Math.cos(angle) * (t.r + rad);
+      return true;
+    }
+  }
   return false;
 }
+
 function isInRiver(x, z) {
   if (Math.abs(z) > 10) return false;
-  if (Math.abs(x) < 7) return false; // мост
-  if (Math.abs(z) < 2 && x > 30 && x < 100) return false; // мост на остров
+  if (Math.abs(x) < 7) return false;
+  if (Math.abs(z) < 2 && x > 30 && x < 100) return false;
   return true;
 }
 
-// Магазин
-function enterShop() {
-  inShop = true; shopInterior.visible = true; shopMesh.visible = false; shopMarker.visible = false;
-  playerGroup.position.set(0, 0, 5);
-  document.getElementById('exit-btn').style.display = 'flex';
-  showMsg('В магазине');
-}
-function exitShop() {
-  inShop = false; shopInterior.visible = false; shopMesh.visible = true; shopMarker.visible = true;
-  playerGroup.position.set(50, 0, 25 + 6 + 4);
-  document.getElementById('exit-btn').style.display = 'none';
-  uiShopHint.style.display = 'none';
-}
-
 // ============ ОБНОВЛЕНИЕ ============
+const clock = new THREE.Clock();
+
 function update(dt) {
   if (gameOver) return;
 
-  // Игрок
+  // Таймеры оружия
+  for (let w in weapons) if (weapons[w].timer > 0) weapons[w].timer -= dt;
+
+  // Магазин
   if (!inShop) {
     const dxS = playerGroup.position.x - 50, dzS = playerGroup.position.z - (25 + 6 + 2);
-    if (Math.hypot(dxS, dzS) < 3 && !drivingCar && !flyingHeli && !ridingBoat) enterShop();
+    if (Math.hypot(dxS, dzS) < 3 && !drivingCar && !flyingHeli && !ridingBoat) {
+      inShop = true; shopInterior.visible = true; shopMesh.visible = false; shopMarker.visible = false;
+      playerGroup.position.set(0, 0, 5); shopUI.style.display = 'block';
+    }
   }
 
   let ix = joy.x, iz = joy.y;
@@ -469,7 +595,6 @@ function update(dt) {
   if (keys['s'] || keys['arrowdown']) iz = 1;
   if (keys['a'] || keys['arrowleft']) ix = -1;
   if (keys['d'] || keys['arrowright']) ix = 1;
-
   const len = Math.hypot(ix, iz);
 
   if (inShop) {
@@ -479,14 +604,6 @@ function update(dt) {
       playerGroup.position.z += iz * 4 * dt;
       playerGroup.position.x = Math.max(-8, Math.min(8, playerGroup.position.x));
       playerGroup.position.z = Math.max(-6, Math.min(8, playerGroup.position.z));
-    }
-    nearShopItem = null; let minD = 3;
-    shopItems3D.forEach(item => { const d = item.position.distanceTo(playerGroup.position); if (d < minD) { minD = d; nearShopItem = item; } });
-    if (nearShopItem) {
-      document.getElementById('buy-btn').style.display = 'flex';
-      document.getElementById('buy-btn').textContent = 'КУПИТЬ ' + nearShopItem.userData.price;
-    } else {
-      document.getElementById('buy-btn').style.display = 'none';
     }
   } else if (drivingCar) {
     let th = -joy.y, st = joy.x;
@@ -511,16 +628,21 @@ function update(dt) {
     if (keys['s'] || keys['arrowdown']) th = -1;
     if (keys['a'] || keys['arrowleft']) st = -1;
     if (keys['d'] || keys['arrowright']) st = 1;
-    if (keys['q']) flyingHeli.position.y += 10 * dt;
-    if (keys['e']) flyingHeli.position.y -= 10 * dt;
-    flyingHeli.position.y = Math.max(2, Math.min(50, flyingHeli.position.y));
+    flyingHeli.position.y = Math.max(2, Math.min(50, flyingHeli.position.y + (keys['q']?10:keys['e']?-10:0)*dt));
     flyingHeli.userData.angle -= st * 1.5 * dt;
     flyingHeli.rotation.y = flyingHeli.userData.angle;
     const fwd = new THREE.Vector3(0,0,1).applyAxisAngle(new THREE.Vector3(0,1,0), flyingHeli.userData.angle);
-    flyingHeli.position.x += fwd.x * th * 25 * dt;
-    flyingHeli.position.z += fwd.z * th * 25 * dt;
-    playerGroup.position.copy(flyingHeli.position);
-    playerGroup.position.y -= 3;
+    const nx = flyingHeli.position.x + fwd.x * th * 25 * dt;
+    const nz = flyingHeli.position.z + fwd.z * th * 25 * dt;
+    let hit = false;
+    for (const b of buildings) {
+      if (buildingHealth.get(b.mesh) <= 0 || !b.mesh.visible) continue;
+      if (nx > b.x - b.w/2 - 2 && nx < b.x + b.w/2 + 2 && nz > b.z - b.d/2 - 2 && nz < b.z + b.d/2 + 2) {
+        if (flyingHeli.position.y < b.h + 2) { hit = true; break; }
+      }
+    }
+    if (!hit) { flyingHeli.position.x = nx; flyingHeli.position.z = nz; }
+    playerGroup.position.copy(flyingHeli.position); playerGroup.position.y -= 3;
     flyingHeli.userData.rot.rotation.y += 20 * dt;
   } else if (ridingBoat) {
     let th = -joy.y, st = joy.x;
@@ -537,11 +659,10 @@ function update(dt) {
     const nx = boat.position.x + fwd.x * boatSpeed * dt;
     const nz = boat.position.z + fwd.z * boatSpeed * dt;
     if (!isInRiver(nx, nz)) { boat.position.x = nx; boat.position.z = nz; }
-    playerGroup.position.copy(boat.position);
-    playerGroup.position.y = 0;
+    playerGroup.position.copy(boat.position); playerGroup.position.y = 0;
   } else {
     const inWater = isInRiver(playerGroup.position.x, playerGroup.position.z);
-    if (inWater !== isSwimming) { isSwimming = inWater; showMsg(isSwimming ? 'Плывёшь' : 'На берегу'); }
+    if (inWater !== isSwimming) isSwimming = inWater;
     if (len > 0.1) {
       ix /= len; iz /= len;
       const sp = isSwimming ? 3 : 6;
@@ -552,6 +673,90 @@ function update(dt) {
       playerGroup.rotation.y = Math.atan2(ix, iz);
     }
     playerGroup.position.y = isSwimming ? -0.3 : 0;
+  }
+
+  // Снаряды
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    const b = bullets[i];
+    b.position.x += b.userData.vx * dt;
+    b.position.z += b.userData.vz * dt;
+    b.userData.life -= dt;
+    let hit = false;
+    for (let j = peds.length - 1; j >= 0; j--) {
+      if (b.position.distanceTo(peds[j].position) < 1.5) {
+        scene.remove(peds[j]); peds.splice(j, 1); hit = true;
+        wanted = Math.min(wanted + 1, 5); uiWanted.style.display = 'inline'; uiWanted.textContent = '⭐'.repeat(wanted);
+        break;
+      }
+    }
+    if (!hit) {
+      for (let j = cops.length - 1; j >= 0; j--) {
+        if (b.position.distanceTo(cops[j].position) < 2) {
+          createExplosion(cops[j].position.x, cops[j].position.z, 1, 0); hit = true; break;
+        }
+      }
+    }
+    if (hit || b.userData.life <= 0) { scene.remove(b); bullets.splice(i, 1); }
+  }
+
+  for (let i = rockets.length - 1; i >= 0; i--) {
+    const r = rockets[i];
+    r.position.x += r.userData.vx * dt;
+    r.position.z += r.userData.vz * dt;
+    r.userData.life -= dt;
+    let hit = false;
+    for (const b of buildings) {
+      if (buildingHealth.get(b.mesh) <= 0 || !b.mesh.visible) continue;
+      if (Math.hypot(b.x - r.position.x, b.z - r.position.z) < b.w/2 + 1) { hit = true; break; }
+    }
+    if (hit || r.userData.life <= 0) {
+      createExplosion(r.position.x, r.position.z, 4, 2); scene.remove(r); rockets.splice(i, 1);
+    }
+  }
+
+  for (let i = grenades.length - 1; i >= 0; i--) {
+    const g = grenades[i];
+    g.position.x += g.userData.vx * dt;
+    g.position.z += g.userData.vz * dt;
+    g.position.y += g.userData.vy * dt;
+    g.userData.vy -= 20 * dt;
+    if (g.position.y < 0.3) { g.position.y = 0.3; g.userData.vy *= -0.5; g.userData.vx *= 0.8; g.userData.vz *= 0.8; }
+    g.userData.fuse -= dt;
+    if (g.userData.fuse <= 0) { createExplosion(g.position.x, g.position.z, 4, 1); scene.remove(g); grenades.splice(i, 1); }
+  }
+
+  for (let i = dynamites.length - 1; i >= 0; i--) {
+    const d = dynamites[i];
+    d.position.x += d.userData.vx * dt;
+    d.position.z += d.userData.vz * dt;
+    d.position.y += d.userData.vy * dt;
+    d.userData.vy -= 20 * dt;
+    if (d.position.y < 0.3) { d.position.y = 0.3; d.userData.vy *= -0.5; }
+    d.userData.fuse -= dt;
+    if (d.userData.fuse <= 0) { createExplosion(d.position.x, d.position.z, 8, 3); scene.remove(d); dynamites.splice(i, 1); }
+  }
+
+  for (let i = mines.length - 1; i >= 0; i--) {
+    const m = mines[i];
+    if (m.userData.fuse === -1) {
+      let triggered = false;
+      if (Math.hypot(playerGroup.position.x - m.position.x, playerGroup.position.z - m.position.z) < 2) triggered = true;
+      for (const c of cops) if (Math.hypot(c.position.x - m.position.x, c.position.z - m.position.z) < 2) triggered = true;
+      for (const p of peds) if (Math.hypot(p.position.x - m.position.x, p.position.z - m.position.z) < 2) triggered = true;
+      if (triggered) m.userData.fuse = 0.5;
+    } else {
+      m.userData.fuse -= dt;
+      if (m.userData.fuse <= 0) { createExplosion(m.position.x, m.position.z, 5, 2); scene.remove(m); mines.splice(i, 1); }
+    }
+  }
+
+  // Частицы взрывов
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.userData.life -= dt;
+    p.scale.setScalar(1 + (1 - p.userData.life / p.userData.max) * p.userData.radius);
+    p.material.opacity = p.userData.life / p.userData.max;
+    if (p.userData.life <= 0) { scene.remove(p); particles.splice(i, 1); }
   }
 
   // Лыжник
@@ -566,9 +771,7 @@ function update(dt) {
     b.rotation.y = b.userData.angle;
     if (b.position.x < -100 || b.position.x > -40) b.userData.angle += Math.PI;
     if (b.position.z < 60 || b.position.z > 110) b.userData.angle += Math.PI;
-    if (b.position.distanceTo(playerGroup.position) < 3 && !inShop && !flyingHeli) {
-      showMsg('Медведь!'); playerGroup.position.x += 5; playerGroup.position.z += 5;
-    }
+    if (b.position.distanceTo(playerGroup.position) < 3 && !inShop && !flyingHeli) { showMsg('Медведь!'); playerGroup.position.x += 5; playerGroup.position.z += 5; }
   });
 
   // Полиция
@@ -579,11 +782,18 @@ function update(dt) {
       c.rotation.y = Math.atan2(dx, dz);
       c.position.x += Math.sin(c.rotation.y) * 6 * dt;
       c.position.z += Math.cos(c.rotation.y) * 6 * dt;
-      if (Math.hypot(dx, dz) < 4) {
-        gameOver = true; document.getElementById('hud').innerHTML = '<h1 style="color:red; text-align:center; margin-top:100px;">АРЕСТ!</h1>';
-      }
+      if (Math.hypot(dx, dz) < 4) { gameOver = true; document.getElementById('hud').innerHTML = '<h1 style="color:red; text-align:center; margin-top:100px;">АРЕСТ!</h1>'; }
     });
-  }
+    // Полицейский вертолет
+    copHeli.visible = true;
+    const dx = playerGroup.position.x - copHeli.position.x, dz = playerGroup.position.z - copHeli.position.z;
+    copHeli.position.x += dx * 0.5 * dt;
+    copHeli.position.z += dz * 0.5 * dt;
+    copHeli.position.y = 15 + Math.sin(performance.now()*0.002)*2;
+    copHeli.rotation.y = Math.atan2(dx, dz);
+    copHeli.userData.rot.rotation.y += 20 * dt;
+    if (Math.hypot(dx, dz) < 5) { gameOver = true; document.getElementById('hud').innerHTML = '<h1 style="color:red; text-align:center; margin-top:100px;">АРЕСТ С ВОЗДУХА!</h1>'; }
+  } else { copHeli.visible = false; }
 
   // Пешеходы
   peds.forEach(p => {
@@ -594,24 +804,6 @@ function update(dt) {
     if (collide(p.position, 0.5)) p.userData.angle += Math.PI;
   });
 
-  // Пули
-  for (let i = bullets.length - 1; i >= 0; i--) {
-    const b = bullets[i];
-    b.position.x += b.userData.vx * dt;
-    b.position.z += b.userData.vz * dt;
-    b.userData.life -= dt;
-    let hit = false;
-    for (let j = peds.length - 1; j >= 0; j--) {
-      if (b.position.distanceTo(peds[j].position) < 1.5) {
-        scene.remove(peds[j]); peds.splice(j, 1); hit = true;
-        wanted = Math.min(wanted + 1, 5); uiWanted.style.display = 'inline'; uiWanted.textContent = '⭐'.repeat(wanted);
-        money += 10; updateMoney();
-        break;
-      }
-    }
-    if (hit || b.userData.life <= 0) { scene.remove(b); bullets.splice(i, 1); }
-  }
-
   // Камера
   const camOff = new THREE.Vector3(0, 7, -10);
   camOff.applyAxisAngle(new THREE.Vector3(0,1,0), playerGroup.rotation.y);
@@ -620,9 +812,7 @@ function update(dt) {
 }
 
 // ============ АНИМАЦИЯ ============
-const clock = new THREE.Clock();
 let frames = 0, last = performance.now();
-
 function animate() {
   requestAnimationFrame(animate);
   if (gameOver) { renderer.render(scene, camera); return; }
@@ -630,18 +820,16 @@ function animate() {
 
   update(dt);
 
-  // UI видимость
   if (!inShop) {
-    document.getElementById('exit-btn').style.display = 'none';
-    document.getElementById('buy-btn').style.display = 'none';
-    actBtn.style.display = (!drivingCar && nearestCar) ? 'flex' : (drivingCar ? 'flex' : 'none');
+    actBtn.style.display = (nearestCar && !drivingCar) || drivingCar ? 'flex' : 'none';
     actBtn.textContent = drivingCar ? 'ВЫЙТИ' : 'СЕСТЬ';
-    shootBtn.style.display = (!flyingHeli && !ridingBoat && !inShop) ? 'flex' : 'none';
-    heliBtn.style.display = (!flyingHeli && !inShop) ? 'flex' : 'none';
-    boatBtn.style.display = (!ridingBoat && !inShop) ? 'flex' : 'none';
+    shootBtn.style.display = (!flyingHeli && !ridingBoat) ? 'flex' : 'none';
+    weapBtn.style.display = (!flyingHeli && !ridingBoat) ? 'flex' : 'none';
+    heliBtn.style.display = flyingHeli ? 'none' : 'flex';
+    boatBtn.style.display = ridingBoat ? 'none' : 'flex';
+    document.getElementById('crosshair').style.display = (!flyingHeli && !ridingBoat) ? 'block' : 'none';
   }
 
-  // Поиск машины
   if (!drivingCar && !inShop) {
     let minD = 5; nearestCar = null;
     cars.forEach(c => { const d = c.position.distanceTo(playerGroup.position); if (d < minD) { minD = d; nearestCar = c; } });
@@ -667,9 +855,8 @@ setTimeout(() => {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('hud').style.display = 'flex';
   document.getElementById('joystick-zone').style.display = 'block';
-  document.getElementById('top-btns').style.display = 'flex';
   animate();
 }, 300);
 </script>
 </body>
-</html>
+ </html>
