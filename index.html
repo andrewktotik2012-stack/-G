@@ -568,7 +568,7 @@ for (let bx = -CITY_SIZE / 2; bx < CITY_SIZE / 2; bx += BLOCK) {
 }
 
 // ============ МАГАЗИН (в доме) ============
-const shopBuilding = { x: 50, z: 0, w: 12, d: 12, h: 8 };
+const shopBuilding = { x: 50, z: 25, w: 12, d: 12, h: 8 };
 const shopMesh = new THREE.Mesh(
   new THREE.BoxGeometry(shopBuilding.w, shopBuilding.h, shopBuilding.d),
   new THREE.MeshStandardMaterial({ color: 0xffcc44, roughness: 0.8 })
