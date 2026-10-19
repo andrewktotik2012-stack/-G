@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-<title>Mini-GTA 3D v6.0 ULTIMATE</title>
+<title>Mini-GTA 3D v6.2 ULTIMATE</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: -apple-system, Arial, sans-serif; touch-action: none; user-select: none; -webkit-user-select: none; }
@@ -35,9 +35,8 @@
 
   #shop-ui { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); border: 2px solid #ffaa00; border-radius: 15px; padding: 15px; color: #fff; text-align: center; display: none; z-index: 40; width: 85%; max-width: 320px; max-height: 80vh; overflow-y: auto; }
   #shop-ui h2 { color: #ffaa00; margin-bottom: 10px; }
-  #shop-ui button { display: flex; justify-content: space-between; width: 100%; padding: 10px; margin: 4px 0; background: #333; color: #fff; border: 1px solid #555; border-radius: 5px; font-size: 13px; text-align: left; }
-  #shop-ui button:active { background: #555; }
-  #shop-ui button.bought { background: #228822; border-color: #44ff44; }
+  .shop-btn { display: flex; justify-content: space-between; width: 100%; padding: 10px; margin: 4px 0; background: #333; color: #fff; border: 1px solid #555; border-radius: 5px; font-size: 13px; text-align: left; }
+  .shop-btn:active { background: #555; }
 
   #fps-counter { position: absolute; top: 5px; right: 5px; color: #0f0; font-size: 11px; font-family: monospace; z-index: 999; background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; }
   #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 30px; height: 30px; border: 2px solid rgba(255,80,80,0.8); border-radius: 50%; display: none; z-index: 11; pointer-events: none; }
@@ -45,7 +44,7 @@
 </head>
 <body>
 
-<div id="loading"><div class="spinner"></div>Загрузка v6.0...</div>
+<div id="loading"><div class="spinner"></div>Загрузка v6.2...</div>
 
 <div id="hud" style="display:none">
   <div>💰 <span class="money" id="money">500</span><br>⭐ <span class="wanted" id="wanted" style="display:none">0</span></div>
@@ -71,12 +70,12 @@
 
 <div id="shop-ui">
   <h2>🏪 Оружейный магазин</h2>
-  <button onclick="buyWeapon('mine', 300)" id="btn-mine">💣 Мина <span>300</span></button>
-  <button onclick="buyWeapon('rocket', 1000)" id="btn-rocket">🚀 Ракетница <span>1000</span></button>
-  <button onclick="buyWeapon('auto', 1500)" id="btn-auto">🔫 Автомат <span>1500</span></button>
-  <button onclick="buyWeapon('dynamite', 500)" id="btn-dynamite">🧨 Динамит <span>500</span></button>
-  <button onclick="buyWeapon('health', 200)" id="btn-health">❤️ Аптечка <span>200</span></button>
-  <button onclick="closeShop()" style="background:#a00; margin-top:10px; justify-content:center;">Закрыть</button>
+  <button class="shop-btn" onclick="buyWeapon('mine', 300)">💣 Мина <span>300</span></button>
+  <button class="shop-btn" onclick="buyWeapon('rocket', 1000)">🚀 Ракетница <span>1000</span></button>
+  <button class="shop-btn" onclick="buyWeapon('auto', 1500)">🔫 Автомат <span>1500</span></button>
+  <button class="shop-btn" onclick="buyWeapon('dynamite', 500)">🧨 Динамит <span>500</span></button>
+  <button class="shop-btn" onclick="buyWeapon('health', 200)">❤️ Аптечка <span>200</span></button>
+  <button class="shop-btn" onclick="closeShop()" style="background:#a00; justify-content:center; font-weight:bold; margin-top:10px;">🚪 ВЫЙТИ ИЗ МАГАЗИНА</button>
 </div>
 
 <script type="importmap">
@@ -89,6 +88,7 @@ import * as THREE from 'three';
 // ============ СЦЕНА ============
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87CEEB);
+scene.fog = new THREE.Fog(0x87CEEB, 60, 200);
 const camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 500);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(innerWidth, innerHeight);
@@ -119,6 +119,7 @@ const ISLAND_R = 20;
 const buildings = [];
 const buildingHealth = new Map();
 const trees = [];
+const bears = [];
 
 function makeBuilding(x, z, w, d, h, isShop = false, color = null) {
   const c = color || [0x8899aa, 0xaa9988, 0x778899, 0x998877][Math.floor(Math.random()*4)];
@@ -127,14 +128,14 @@ function makeBuilding(x, z, w, d, h, isShop = false, color = null) {
   mesh.castShadow = true; mesh.receiveShadow = true;
   scene.add(mesh);
   
-  // Окна
+  // Окна снаружи
   const rows = Math.floor(h / 3);
   const cols = Math.floor(w / 2);
   for (let r = 1; r < rows; r++) {
     for (let cI = 0; cI < cols; cI++) {
-      if (Math.random() > 0.6) {
+      if (Math.random() > 0.4) {
         const win = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1), new THREE.MeshBasicMaterial({ color: 0xffee88 }));
-        win.position.set(x - w/2 + 1.2 + cI*2, r*3, z + d/2 + 0.02);
+        win.position.set(x - w/2 + 1.2 + cI*2, r*3, z + d/2 + 0.05);
         scene.add(win);
       }
     }
@@ -188,10 +189,10 @@ scene.add(island);
 for (let bx = -CITY_SIZE/2; bx < CITY_SIZE/2; bx += BLOCK) {
   for (let bz = -CITY_SIZE/2; bz < CITY_SIZE/2; bz += BLOCK) {
     const qcx = bx + BLOCK/2, qcz = bz + BLOCK/2;
-    if (Math.abs(qcz) < 18) continue; // река
+    if (Math.abs(qcz) < 18) continue;
     if (Math.hypot(qcx - ISLAND_X, qcz - ISLAND_Z) < ISLAND_R + 5) continue;
-    if (qcx < -50 && qcz < -60) continue; // горы
-    if (qcx < -50 && qcz > 50) continue; // лес
+    if (qcx < -50 && qcz < -60) continue;
+    if (qcx < -50 && qcz > 50) continue;
 
     const roadMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
     const roadH = new THREE.Mesh(new THREE.PlaneGeometry(BLOCK, 10), roadMat);
@@ -219,7 +220,7 @@ b1.position.set(0, 0.5, 0); scene.add(b1);
 const b2 = new THREE.Mesh(new THREE.BoxGeometry(40, 1, 4), new THREE.MeshStandardMaterial({ color: 0x888888 }));
 b2.position.set(ISLAND_X/2 + 30, 0.5, 0); scene.add(b2);
 
-// ============ МАГАЗИН ============
+// Магазин
 const shopBuilding = { x: 60, z: 30, w: 12, d: 12, h: 8 };
 makeBuilding(60, 30, 12, 12, 8, true, 0xffcc44);
 const shopMesh = buildings[buildings.length-1].mesh;
@@ -227,7 +228,7 @@ const shopMarker = new THREE.Mesh(new THREE.CylinderGeometry(2.5, 2.5, 0.1, 12),
 shopMarker.position.set(60, 0.1, 30 + 6 + 2);
 scene.add(shopMarker);
 
-// ============ ИНТЕРЬЕР ============
+// Интерьер
 const shopInterior = new THREE.Group();
 shopInterior.visible = false;
 const intFloor = new THREE.Mesh(new THREE.PlaneGeometry(18, 18), new THREE.MeshStandardMaterial({ color: 0x8B7355 }));
@@ -237,7 +238,6 @@ const intBack = new THREE.Mesh(new THREE.PlaneGeometry(18, 6), intWallMat); intB
 const intLeft = new THREE.Mesh(new THREE.PlaneGeometry(18, 6), intWallMat); intLeft.rotation.y = Math.PI / 2; intLeft.position.set(-9, 3, 0); shopInterior.add(intLeft);
 const intRight = new THREE.Mesh(new THREE.PlaneGeometry(18, 6), intWallMat); intRight.rotation.y = -Math.PI / 2; intRight.position.set(9, 3, 0); shopInterior.add(intRight);
 const shopLight = new THREE.PointLight(0xffffaa, 3, 25); shopLight.position.set(0, 5, 0); shopInterior.add(shopLight);
-
 const counter = new THREE.Mesh(new THREE.BoxGeometry(7, 1.2, 2), new THREE.MeshStandardMaterial({ color: 0x8B4513 }));
 counter.position.set(0, 0.6, 0); shopInterior.add(counter);
 const seller = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.5, 8), new THREE.MeshStandardMaterial({ color: 0x44aa44 }));
@@ -258,41 +258,27 @@ const shopItems3D = [];
   shopItems3D.push(item);
 });
 
-// ============ ЛЮДИ И ЖИВОТНЫЕ ============
+// Лыжник и Медведи
 const skier = new THREE.Group();
 const skierBody = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1, 0.3), new THREE.MeshStandardMaterial({ color: 0x00ff00 }));
 skierBody.position.y = 1; skier.add(skierBody);
 const skis = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.1, 2), new THREE.MeshStandardMaterial({ color: 0xaaaaaa }));
 skis.position.y = 0.1; skier.add(skis);
-skier.position.set(-50, 0, -80);
-scene.add(skier);
+skier.position.set(-50, 0, -80); scene.add(skier);
 
-// Медведи (теперь с лапами)
-const bears = [];
 function makeBear(x, z) {
   const g = new THREE.Group();
   const body = new THREE.Mesh(new THREE.SphereGeometry(0.7, 8, 8), new THREE.MeshStandardMaterial({ color: 0x4a2e15 }));
   body.scale.set(1, 1.2, 1.5); body.position.y = 0.9; g.add(body);
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 8), new THREE.MeshStandardMaterial({ color: 0x4a2e15 }));
   head.position.set(0, 1.6, 0.8); g.add(head);
-  const earL = new THREE.Mesh(new THREE.SphereGeometry(0.15, 6, 6), new THREE.MeshStandardMaterial({ color: 0x2e1c0c }));
-  earL.position.set(-0.3, 2, 0.8); g.add(earL);
-  const earR = new THREE.Mesh(new THREE.SphereGeometry(0.15, 6, 6), new THREE.MeshStandardMaterial({ color: 0x2e1c0c }));
-  earR.position.set(0.3, 2, 0.8); g.add(earR);
-  
-  const legs = [];
-  [[-0.4, 0.3], [0.4, 0.3], [-0.4, -0.4], [0.4, -0.4]].forEach(([lx, lz]) => {
-    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.6, 0.25), new THREE.MeshStandardMaterial({ color: 0x2e1c0c }));
-    leg.position.set(lx, 0.3, lz); g.add(leg); legs.push(leg);
-  });
-  
   g.position.set(x, 0, z);
-  g.userData = { angle: Math.random()*Math.PI*2, speed: 2, legs };
+  g.userData = { angle: Math.random()*Math.PI*2, speed: 2 };
   scene.add(g); bears.push(g);
 }
 for (let i = 0; i < 3; i++) makeBear(-80 + i*15, 80 + Math.random()*20);
 
-// ============ ИГРОК ============
+// Игрок
 const playerGroup = new THREE.Group();
 const torso = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.2, 0.4), new THREE.MeshStandardMaterial({ color: 0x2255cc }));
 torso.position.y = 1.1; torso.castShadow = true; playerGroup.add(torso);
@@ -305,10 +291,9 @@ for (let i = 0; i < 2; i++) {
   const leg = new THREE.Mesh(new THREE.BoxGeometry(0.28, 1, 0.3), new THREE.MeshStandardMaterial({ color: 0x333344 }));
   leg.position.set(i === 0 ? -0.18 : 0.18, 0.5, 0); leg.castShadow = true; playerGroup.add(leg); legs.push(leg);
 }
-playerGroup.position.set(20, 0, 20);
-scene.add(playerGroup);
+playerGroup.position.set(20, 0, 20); scene.add(playerGroup);
 
-// ============ ТРАНСПОРТ (С КОЛЁСАМИ) ============
+// Транспорт
 const cars = [];
 function makeCar(x, z, color, isCop = false) {
   const g = new THREE.Group();
@@ -316,7 +301,6 @@ function makeCar(x, z, color, isCop = false) {
   body.position.y = 0.7; body.castShadow = true; g.add(body);
   const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.6, 2), new THREE.MeshStandardMaterial({ color: 0x88ccff, metalness: 0.9 }));
   cabin.position.set(0, 1.3, -0.3); g.add(cabin);
-  
   const wheelGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.25, 12);
   wheelGeo.rotateZ(Math.PI / 2);
   const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
@@ -324,15 +308,6 @@ function makeCar(x, z, color, isCop = false) {
     const wheel = new THREE.Mesh(wheelGeo, wheelMat);
     wheel.position.set(wx, wy, wz); wheel.castShadow = true; g.add(wheel);
   });
-
-  if (isCop) {
-    const sirenR = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
-    sirenR.position.set(-0.4, 1.7, 0); g.add(sirenR);
-    const sirenB = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshBasicMaterial({ color: 0x0000ff }));
-    sirenB.position.set(0.4, 1.7, 0); g.add(sirenB);
-    g.userData.sirenR = sirenR; g.userData.sirenB = sirenB;
-  }
-
   g.position.set(x, 0, z);
   g.rotation.y = Math.random() * Math.PI * 2;
   g.userData.isCop = isCop;
@@ -342,7 +317,6 @@ for(let i=0; i<15; i++) makeCar((Math.random()-0.5)*180, (Math.random()-0.5)*180
 const cops = [];
 for(let i=0; i<4; i++) cops.push(makeCar((Math.random()-0.5)*180, (Math.random()-0.5)*180, 0x111111, true));
 
-// Вертолеты
 const helis = [];
 function makeHeli(x, z) {
   const g = new THREE.Group();
@@ -356,9 +330,7 @@ function makeHeli(x, z) {
 }
 makeHeli(30, 30); makeHeli(-30, 30);
 
-const copHeli = makeHeli(0, 0);
-copHeli.userData.isCop = true;
-copHeli.visible = false;
+const copHeli = makeHeli(0, 0); copHeli.visible = false;
 
 let boat = null;
 function makeBoat() {
@@ -366,12 +338,10 @@ function makeBoat() {
   const b = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.6, 5), new THREE.MeshStandardMaterial({ color: 0x8B4513, roughness: 0.8 }));
   b.position.y = 0.3; b.castShadow = true; g.add(b);
   g.position.set(-30, 0.3, 0);
-  g.userData = { angle: 0 };
   scene.add(g); boat = g; return g;
 }
 makeBoat();
 
-// Пешеходы (теперь с ногами, которые ходят)
 const peds = [];
 function makePed(x, z) {
   const g = new THREE.Group();
@@ -389,14 +359,8 @@ function makePed(x, z) {
 }
 for (let i = 0; i < 30; i++) makePed((Math.random()-0.5)*180, (Math.random()-0.5)*180);
 
-// ============ ОРУЖИЕ И СНАРЯДЫ ============
-const bullets = [];
-const rockets = [];
-const grenades = [];
-const dynamites = [];
-const mines = [];
-const particles = [];
-
+// Оружие и снаряды
+const bullets = [], rockets = [], grenades = [], dynamites = [], mines = [], particles = [];
 let currentWeapon = 'pistol';
 const weapons = {
   pistol: { name: 'Пистолет', ammo: -1, cooldown: 0.2, timer: 0 },
@@ -407,15 +371,12 @@ const weapons = {
   dynamite: { name: 'Динамит', ammo: 0, cooldown: 1.0, timer: 0 }
 };
 
-// ============ ЛОГИКА ============
-let money = 500;
-let wanted = 0, gameOver = false, inShop = false, isSwimming = false;
+// Логика
+let money = 500, wanted = 0, gameOver = false, inShop = false, isSwimming = false;
 let nearestCar = null, drivingCar = null, flyingHeli = null, ridingBoat = null;
 let carSpeed = 0, boatSpeed = 0, walkCycle = 0;
-
 const uiMoney = document.getElementById('money');
 const uiWanted = document.getElementById('wanted');
-const uiTask = document.getElementById('task');
 const uiMsg = document.getElementById('message');
 const shopUI = document.getElementById('shop-ui');
 
@@ -427,16 +388,14 @@ function nextWeapon() {
   let idx = list.indexOf(currentWeapon);
   if (idx === -1) idx = 0;
   currentWeapon = list[(idx + 1) % list.length];
-  showMsg('Оружие: ' + weapons[currentWeapon].name + ' (' + (weapons[currentWeapon].ammo === -1 ? '∞' : weapons[currentWeapon].ammo) + ')');
+  showMsg('Оружие: ' + weapons[currentWeapon].name);
 }
 
 window.buyWeapon = (id, price) => {
   if (money < price) { showMsg('Мало денег!'); return; }
   money -= price; updateMoney();
   if (id === 'health') showMsg('Здоровье восстановлено!');
-  else { weapons[id].ammo += (id === 'auto' ? 100 : (id === 'grenade' ? 3 : 2)); showMsg('Куплено: ' + weapons[id].name); }
-  document.getElementById('btn-' + id).classList.add('bought');
-  setTimeout(() => document.getElementById('btn-' + id).classList.remove('bought'), 500);
+  else { weapons[id].ammo += (id === 'auto' ? 100 : (id === 'grenade' ? 3 : 2)); showMsg('Куплено!'); }
 };
 
 window.closeShop = () => { 
@@ -446,37 +405,16 @@ window.closeShop = () => {
 
 // Управление
 const joy = { active: false, x: 0, y: 0, startX: 0, startY: 0 };
-const jz = document.getElementById('joystick-zone');
-const jb = document.getElementById('joystick-base');
-const jk = document.getElementById('joystick-knob');
-jz.addEventListener('touchstart', e => {
-  e.preventDefault(); const t = e.touches[0];
-  joy.active = true; joy.startX = t.clientX; joy.startY = t.clientY;
-  jb.style.display = 'block'; jb.style.left = (t.clientX - 60) + 'px'; jb.style.top = (t.clientY - 60) + 'px';
-  jk.style.display = 'block'; jk.style.left = (t.clientX - 27) + 'px'; jk.style.top = (t.clientY - 27) + 'px';
-}, { passive: false });
-jz.addEventListener('touchmove', e => {
-  e.preventDefault(); if (!joy.active) return;
-  const t = e.touches[0]; let dx = t.clientX - joy.startX, dy = t.clientY - joy.startY;
-  const d = Math.hypot(dx, dy); if (d > 60) { dx = dx/d*60; dy = dy/d*60; }
-  joy.x = dx/60; joy.y = dy/60;
-  jk.style.left = (joy.startX + dx - 27) + 'px'; jk.style.top = (joy.startY + dy - 27) + 'px';
-}, { passive: false });
-jz.addEventListener('touchend', e => {
-  e.preventDefault(); joy.active = false; joy.x = 0; joy.y = 0;
-  jb.style.display = 'none'; jk.style.display = 'none';
-}, { passive: false });
+const jz = document.getElementById('joystick-zone'), jb = document.getElementById('joystick-base'), jk = document.getElementById('joystick-knob');
+jz.addEventListener('touchstart', e => { e.preventDefault(); const t = e.touches[0]; joy.active = true; joy.startX = t.clientX; joy.startY = t.clientY; jb.style.display = 'block'; jb.style.left = (t.clientX - 60) + 'px'; jb.style.top = (t.clientY - 60) + 'px'; jk.style.display = 'block'; jk.style.left = (t.clientX - 27) + 'px'; jk.style.top = (t.clientY - 27) + 'px'; }, { passive: false });
+jz.addEventListener('touchmove', e => { e.preventDefault(); if (!joy.active) return; const t = e.touches[0]; let dx = t.clientX - joy.startX, dy = t.clientY - joy.startY; const d = Math.hypot(dx, dy); if (d > 60) { dx = dx/d*60; dy = dy/d*60; } joy.x = dx/60; joy.y = dy/60; jk.style.left = (joy.startX + dx - 27) + 'px'; jk.style.top = (joy.startY + dy - 27) + 'px'; }, { passive: false });
+jz.addEventListener('touchend', e => { e.preventDefault(); joy.active = false; joy.x = 0; joy.y = 0; jb.style.display = 'none'; jk.style.display = 'none'; }, { passive: false });
 
 const keys = {};
 window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
 window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
-const actBtn = document.getElementById('action-btn');
-const shootBtn = document.getElementById('shoot-btn');
-const heliBtn = document.getElementById('heli-btn');
-const boatBtn = document.getElementById('boat-btn');
-const weapBtn = document.getElementById('weapon-btn');
-
+const actBtn = document.getElementById('action-btn'), shootBtn = document.getElementById('shoot-btn'), heliBtn = document.getElementById('heli-btn'), boatBtn = document.getElementById('boat-btn'), weapBtn = document.getElementById('weapon-btn');
 function bind(b, fn) { b.addEventListener('touchstart', e => { e.preventDefault(); fn(); }, { passive: false }); b.addEventListener('click', e => { e.preventDefault(); fn(); }); }
 
 bind(actBtn, () => {
@@ -515,54 +453,39 @@ bind(shootBtn, () => {
 
   if (currentWeapon === 'pistol' || currentWeapon === 'auto') {
     const b = new THREE.Mesh(new THREE.SphereGeometry(0.15, 4, 4), new THREE.MeshBasicMaterial({ color: 0xffff00 }));
-    b.position.copy(startPos);
-    b.userData = { vx: fwd.x*80, vz: fwd.z*80, life: 1.0 };
-    scene.add(b); bullets.push(b);
+    b.position.copy(startPos); b.userData = { vx: fwd.x*80, vz: fwd.z*80, life: 1.0 }; scene.add(b); bullets.push(b);
   } else if (currentWeapon === 'grenade') {
     const g = new THREE.Mesh(new THREE.SphereGeometry(0.3, 6, 6), new THREE.MeshStandardMaterial({ color: 0x226622 }));
-    g.position.copy(startPos);
-    g.userData = { vx: fwd.x*20, vy: 5, vz: fwd.z*20, fuse: 2.0 };
-    scene.add(g); grenades.push(g);
+    g.position.copy(startPos); g.userData = { vx: fwd.x*20, vy: 5, vz: fwd.z*20, fuse: 2.0 }; scene.add(g); grenades.push(g);
   } else if (currentWeapon === 'rocket') {
     const r = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.8, 6), new THREE.MeshStandardMaterial({ color: 0xff2222 }));
-    r.rotation.x = Math.PI / 2; r.rotation.y = playerGroup.rotation.y;
-    r.position.copy(startPos);
-    r.userData = { vx: fwd.x*50, vz: fwd.z*50, life: 2.0 };
-    scene.add(r); rockets.push(r);
+    r.rotation.x = Math.PI / 2; r.rotation.y = playerGroup.rotation.y; r.position.copy(startPos);
+    r.userData = { vx: fwd.x*50, vz: fwd.z*50, life: 2.0 }; scene.add(r); rockets.push(r);
   } else if (currentWeapon === 'mine') {
     const m = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.1, 8), new THREE.MeshStandardMaterial({ color: 0x888800 }));
-    m.position.copy(playerGroup.position); m.position.y = 0.05;
-    m.userData = { fuse: -1 };
-    scene.add(m); mines.push(m);
+    m.position.copy(playerGroup.position); m.position.y = 0.05; m.userData = { fuse: -1 }; scene.add(m); mines.push(m);
   } else if (currentWeapon === 'dynamite') {
     const d = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.5, 6), new THREE.MeshStandardMaterial({ color: 0xff0000 }));
-    d.rotation.x = Math.PI / 2; d.rotation.y = playerGroup.rotation.y;
-    d.position.copy(startPos);
-    d.userData = { vx: fwd.x*15, vy: 3, vz: fwd.z*15, fuse: 3.0 };
-    scene.add(d); dynamites.push(d);
+    d.rotation.x = Math.PI / 2; d.rotation.y = playerGroup.rotation.y; d.position.copy(startPos);
+    d.userData = { vx: fwd.x*15, vy: 3, vz: fwd.z*15, fuse: 3.0 }; scene.add(d); dynamites.push(d);
   }
 });
 
-// Взрыв
 function createExplosion(x, z, radius, damage) {
   const p = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 8), new THREE.MeshBasicMaterial({ color: 0xff4400, transparent: true, opacity: 0.8 }));
-  p.position.set(x, 1, z);
-  p.userData = { life: 0.5, max: 0.5, radius };
-  scene.add(p); particles.push(p);
+  p.position.set(x, 1, z); p.userData = { life: 0.5, max: 0.5, radius }; scene.add(p); particles.push(p);
 
   buildings.forEach(b => {
     if (b.isShop || buildingHealth.get(b.mesh) === 999) return;
     if (Math.hypot(b.x - x, b.z - z) < radius + b.w/2) {
-      const hp = (buildingHealth.get(b.mesh) || 3) - damage;
-      buildingHealth.set(b.mesh, hp);
+      const hp = (buildingHealth.get(b.mesh) || 3) - damage; buildingHealth.set(b.mesh, hp);
       if (hp <= 0) { b.mesh.visible = false; money += 50; updateMoney(); }
     }
   });
 
   for (let i = peds.length - 1; i >= 0; i--) {
     if (Math.hypot(peds[i].position.x - x, peds[i].position.z - z) < radius) {
-      scene.remove(peds[i]); peds.splice(i, 1);
-      wanted = Math.min(wanted + 1, 5); uiWanted.style.display = 'inline'; uiWanted.textContent = '⭐'.repeat(wanted);
+      scene.remove(peds[i]); peds.splice(i, 1); wanted = Math.min(wanted + 1, 5); uiWanted.style.display = 'inline'; uiWanted.textContent = '⭐'.repeat(wanted);
     }
   }
   for (let i = cars.length - 1; i >= 0; i--) {
@@ -571,8 +494,11 @@ function createExplosion(x, z, radius, damage) {
   for (let i = cops.length - 1; i >= 0; i--) {
     if (Math.hypot(cops[i].position.x - x, cops[i].position.z - z) < radius) { scene.remove(cops[i]); cops.splice(i, 1); }
   }
+  for (let i = bears.length - 1; i >= 0; i--) {
+    if (Math.hypot(bears[i].position.x - x, bears[i].position.z - z) < radius) { scene.remove(bears[i]); bears.splice(i, 1); }
+  }
   if (Math.hypot(playerGroup.position.x - x, playerGroup.position.z - z) < radius) { 
-    showMsg('Взрыв!'); gameOver = true; document.getElementById('hud').innerHTML = '<h1 style="color:red; text-align:center; margin-top:100px;">ВЫ ПОГИБЛИ</h1>'; 
+    gameOver = true; document.getElementById('hud').innerHTML = '<h1 style="color:red; text-align:center; margin-top:100px;">ВЫ ПОГИБЛИ</h1>'; 
   }
 }
 
@@ -589,9 +515,7 @@ function collide(pos, rad) {
   }
   for (const t of trees) {
     if (Math.hypot(pos.x - t.x, pos.z - t.z) < t.r + rad) {
-      const angle = Math.atan2(pos.x - t.x, pos.z - t.z);
-      pos.x = t.x + Math.sin(angle) * (t.r + rad); pos.z = t.z + Math.cos(angle) * (t.r + rad);
-      return true;
+      const angle = Math.atan2(pos.x - t.x, pos.z - t.z); pos.x = t.x + Math.sin(angle) * (t.r + rad); pos.z = t.z + Math.cos(angle) * (t.r + rad); return true;
     }
   }
   return false;
@@ -604,9 +528,8 @@ function isInRiver(x, z) {
   return true;
 }
 
-// ============ ОБНОВЛЕНИЕ ============
+// ============ ОБНОВЛЕНИЕ ИГРЫ ============
 const clock = new THREE.Clock();
-
 function update(dt) {
   if (gameOver) return;
 
@@ -640,14 +563,11 @@ function update(dt) {
     if (keys['s'] || keys['arrowdown']) th = -1;
     if (keys['a'] || keys['arrowleft']) st = -1;
     if (keys['d'] || keys['arrowright']) st = 1;
-    if (th > 0) carSpeed += 15 * dt;
-    else if (th < 0) carSpeed -= 20 * dt;
-    else carSpeed *= 0.95;
+    if (th > 0) carSpeed += 15 * dt; else if (th < 0) carSpeed -= 20 * dt; else carSpeed *= 0.95;
     carSpeed = Math.max(-10, Math.min(25, carSpeed));
     if (Math.abs(carSpeed) > 0.5) drivingCar.rotation.y -= st * 2 * dt * Math.sign(carSpeed);
     const fwd = new THREE.Vector3(0,0,1).applyAxisAngle(new THREE.Vector3(0,1,0), drivingCar.rotation.y);
-    const nx = drivingCar.position.x + fwd.x * carSpeed * dt;
-    const nz = drivingCar.position.z + fwd.z * carSpeed * dt;
+    const nx = drivingCar.position.x + fwd.x * carSpeed * dt, nz = drivingCar.position.z + fwd.z * carSpeed * dt;
     if (!isInRiver(nx, nz)) { drivingCar.position.x = nx; drivingCar.position.z = nz; }
     collide(drivingCar.position, 1.5);
     playerGroup.position.copy(drivingCar.position);
@@ -661,8 +581,7 @@ function update(dt) {
     flyingHeli.userData.angle -= st * 1.5 * dt;
     flyingHeli.rotation.y = flyingHeli.userData.angle;
     const fwd = new THREE.Vector3(0,0,1).applyAxisAngle(new THREE.Vector3(0,1,0), flyingHeli.userData.angle);
-    const nx = flyingHeli.position.x + fwd.x * th * 25 * dt;
-    const nz = flyingHeli.position.z + fwd.z * th * 25 * dt;
+    const nx = flyingHeli.position.x + fwd.x * th * 25 * dt, nz = flyingHeli.position.z + fwd.z * th * 25 * dt;
     let hit = false;
     for (const b of buildings) {
       if (buildingHealth.get(b.mesh) <= 0 || !b.mesh.visible) continue;
@@ -679,14 +598,11 @@ function update(dt) {
     if (keys['s'] || keys['arrowdown']) th = -1;
     if (keys['a'] || keys['arrowleft']) st = -1;
     if (keys['d'] || keys['arrowright']) st = 1;
-    if (th > 0) boatSpeed += 10 * dt;
-    else if (th < 0) boatSpeed -= 10 * dt;
-    else boatSpeed *= 0.95;
+    if (th > 0) boatSpeed += 10 * dt; else if (th < 0) boatSpeed -= 10 * dt; else boatSpeed *= 0.95;
     boatSpeed = Math.max(-5, Math.min(15, boatSpeed));
     if (Math.abs(boatSpeed) > 0.5) boat.rotation.y -= st * 1.5 * dt * Math.sign(boatSpeed);
     const fwd = new THREE.Vector3(0,0,1).applyAxisAngle(new THREE.Vector3(0,1,0), boat.rotation.y);
-    const nx = boat.position.x + fwd.x * boatSpeed * dt;
-    const nz = boat.position.z + fwd.z * boatSpeed * dt;
+    const nx = boat.position.x + fwd.x * boatSpeed * dt, nz = boat.position.z + fwd.z * boatSpeed * dt;
     if (!isInRiver(nx, nz)) { boat.position.x = nx; boat.position.z = nz; }
     playerGroup.position.copy(boat.position); playerGroup.position.y = 0;
   } else {
@@ -695,34 +611,29 @@ function update(dt) {
     if (len > 0.1) {
       ix /= len; iz /= len;
       const sp = isSwimming ? 3 : 6;
-      const nx = playerGroup.position.x + ix * sp * dt;
-      const nz = playerGroup.position.z + iz * sp * dt;
+      const nx = playerGroup.position.x + ix * sp * dt, nz = playerGroup.position.z + iz * sp * dt;
       if (isSwimming || !isInRiver(nx, nz)) { playerGroup.position.x = nx; playerGroup.position.z = nz; }
       if (!isSwimming) collide(playerGroup.position, 0.5);
       playerGroup.rotation.y = Math.atan2(ix, iz);
-      
       walkCycle += dt * 10;
-      legs[0].rotation.x = Math.sin(walkCycle) * 0.6;
-      legs[1].rotation.x = -Math.sin(walkCycle) * 0.6;
-      arms[0].rotation.x = -Math.sin(walkCycle) * 0.4;
-      arms[1].rotation.x = Math.sin(walkCycle) * 0.4;
+      legs[0].rotation.x = Math.sin(walkCycle) * 0.6; legs[1].rotation.x = -Math.sin(walkCycle) * 0.6;
+      arms[0].rotation.x = -Math.sin(walkCycle) * 0.4; arms[1].rotation.x = Math.sin(walkCycle) * 0.4;
     } else {
-      legs[0].rotation.x *= 0.9; legs[1].rotation.x *= 0.9;
-      arms[0].rotation.x *= 0.9; arms[1].rotation.x *= 0.9;
+      legs[0].rotation.x *= 0.9; legs[1].rotation.x *= 0.9; arms[0].rotation.x *= 0.9; arms[1].rotation.x *= 0.9;
     }
     playerGroup.position.y = isSwimming ? -0.3 : 0;
   }
 
   // Снаряды
   for (let i = bullets.length - 1; i >= 0; i--) {
-    const b = bullets[i];
-    b.position.x += b.userData.vx * dt; b.position.z += b.userData.vz * dt; b.userData.life -= dt;
+    const b = bullets[i]; b.position.x += b.userData.vx * dt; b.position.z += b.userData.vz * dt; b.userData.life -= dt;
     let hit = false;
     for (let j = peds.length - 1; j >= 0; j--) {
-      if (b.position.distanceTo(peds[j].position) < 1.5) {
-        scene.remove(peds[j]); peds.splice(j, 1); hit = true;
-        wanted = Math.min(wanted + 1, 5); uiWanted.style.display = 'inline'; uiWanted.textContent = '⭐'.repeat(wanted);
-        break;
+      if (b.position.distanceTo(peds[j].position) < 1.5) { scene.remove(peds[j]); peds.splice(j, 1); hit = true; wanted = Math.min(wanted + 1, 5); uiWanted.style.display = 'inline'; uiWanted.textContent = '⭐'.repeat(wanted); break; }
+    }
+    if (!hit) {
+      for (let j = bears.length - 1; j >= 0; j--) {
+        if (b.position.distanceTo(bears[j].position) < 1.5) { scene.remove(bears[j]); bears.splice(j, 1); hit = true; break; }
       }
     }
     if (!hit) {
@@ -734,8 +645,7 @@ function update(dt) {
   }
 
   for (let i = rockets.length - 1; i >= 0; i--) {
-    const r = rockets[i];
-    r.position.x += r.userData.vx * dt; r.position.z += r.userData.vz * dt; r.userData.life -= dt;
+    const r = rockets[i]; r.position.x += r.userData.vx * dt; r.position.z += r.userData.vz * dt; r.userData.life -= dt;
     let hit = false;
     for (const b of buildings) {
       if (buildingHealth.get(b.mesh) <= 0 || !b.mesh.visible) continue;
@@ -745,18 +655,14 @@ function update(dt) {
   }
 
   for (let i = grenades.length - 1; i >= 0; i--) {
-    const g = grenades[i];
-    g.position.x += g.userData.vx * dt; g.position.z += g.userData.vz * dt; g.position.y += g.userData.vy * dt;
-    g.userData.vy -= 20 * dt;
+    const g = grenades[i]; g.position.x += g.userData.vx * dt; g.position.z += g.userData.vz * dt; g.position.y += g.userData.vy * dt; g.userData.vy -= 20 * dt;
     if (g.position.y < 0.3) { g.position.y = 0.3; g.userData.vy *= -0.5; g.userData.vx *= 0.8; g.userData.vz *= 0.8; }
     g.userData.fuse -= dt;
     if (g.userData.fuse <= 0) { createExplosion(g.position.x, g.position.z, 4, 1); scene.remove(g); grenades.splice(i, 1); }
   }
 
   for (let i = dynamites.length - 1; i >= 0; i--) {
-    const d = dynamites[i];
-    d.position.x += d.userData.vx * dt; d.position.z += d.userData.vz * dt; d.position.y += d.userData.vy * dt;
-    d.userData.vy -= 20 * dt;
+    const d = dynamites[i]; d.position.x += d.userData.vx * dt; d.position.z += d.userData.vz * dt; d.position.y += d.userData.vy * dt; d.userData.vy -= 20 * dt;
     if (d.position.y < 0.3) { d.position.y = 0.3; d.userData.vy *= -0.5; }
     d.userData.fuse -= dt;
     if (d.userData.fuse <= 0) { createExplosion(d.position.x, d.position.z, 8, 3); scene.remove(d); dynamites.splice(i, 1); }
@@ -777,36 +683,27 @@ function update(dt) {
   }
 
   for (let i = particles.length - 1; i >= 0; i--) {
-    const p = particles[i];
-    p.userData.life -= dt;
-    p.scale.setScalar(1 + (1 - p.userData.life / p.userData.max) * p.userData.radius);
-    p.material.opacity = p.userData.life / p.userData.max;
+    const p = particles[i]; p.userData.life -= dt; p.scale.setScalar(1 + (1 - p.userData.life / p.userData.max) * p.userData.radius); p.material.opacity = p.userData.life / p.userData.max;
     if (p.userData.life <= 0) { scene.remove(p); particles.splice(i, 1); }
   }
 
-  // Лыжник
-  skier.position.z += 8 * dt;
-  if (skier.position.z > -70) skier.position.z = -90;
+  skier.position.z += 8 * dt; if (skier.position.z > -70) skier.position.z = -90;
   skier.position.x = -50 + Math.sin(skier.position.z * 0.1) * 10;
 
-  // Медведи
   bears.forEach(b => {
     b.position.x += Math.sin(b.userData.angle) * b.userData.speed * dt;
     b.position.z += Math.cos(b.userData.angle) * b.userData.speed * dt;
     b.rotation.y = b.userData.angle;
     if (b.position.x < -100 || b.position.x > -40) b.userData.angle += Math.PI;
     if (b.position.z < 60 || b.position.z > 110) b.userData.angle += Math.PI;
-    if (b.position.distanceTo(playerGroup.position) < 3 && !inShop && !flyingHeli) { showMsg('Медведь!'); playerGroup.position.x += 5; playerGroup.position.z += 5; }
   });
 
-  // Полиция
   if (wanted > 0) {
     cops.forEach(c => {
       if (c === drivingCar) return;
       const dx = playerGroup.position.x - c.position.x, dz = playerGroup.position.z - c.position.z;
       c.rotation.y = Math.atan2(dx, dz);
-      c.position.x += Math.sin(c.rotation.y) * 6 * dt;
-      c.position.z += Math.cos(c.rotation.y) * 6 * dt;
+      c.position.x += Math.sin(c.rotation.y) * 6 * dt; c.position.z += Math.cos(c.rotation.y) * 6 * dt;
       if (Math.hypot(dx, dz) < 4) { gameOver = true; document.getElementById('hud').innerHTML = '<h1 style="color:red; text-align:center; margin-top:100px;">АРЕСТ!</h1>'; }
     });
     copHeli.visible = true;
@@ -818,37 +715,56 @@ function update(dt) {
     if (Math.hypot(dx, dz) < 5) { gameOver = true; document.getElementById('hud').innerHTML = '<h1 style="color:red; text-align:center; margin-top:100px;">АРЕСТ С ВОЗДУХА!</h1>'; }
   } else { copHeli.visible = false; }
 
-  // Пешеходы
   peds.forEach(p => {
     p.position.x += Math.sin(p.userData.angle) * p.userData.speed * dt;
     p.position.z += Math.cos(p.userData.angle) * p.userData.speed * dt;
     p.rotation.y = p.userData.angle;
     if (Math.random() < 0.01) p.userData.angle += (Math.random() - 0.5);
     if (collide(p.position, 0.5)) p.userData.angle += Math.PI;
-    
-    p.userData.cycle += dt * 10;
-    p.userData.l1.rotation.x = Math.sin(p.userData.cycle) * 0.5;
-    p.userData.l2.rotation.x = -Math.sin(p.userData.cycle) * 0.5;
+    p.userData.cycle += dt * 10; p.userData.l1.rotation.x = Math.sin(p.userData.cycle) * 0.5; p.userData.l2.rotation.x = -Math.sin(p.userData.cycle) * 0.5;
   });
 
-  // Камера
   let camOff = new THREE.Vector3(0, 7, -10);
   if (drivingCar) camOff.applyAxisAngle(new THREE.Vector3(0,1,0), drivingCar.rotation.y);
   else if (flyingHeli) camOff.applyAxisAngle(new THREE.Vector3(0,1,0), flyingHeli.userData.angle);
   else camOff.applyAxisAngle(new THREE.Vector3(0,1,0), playerGroup.rotation.y);
-  
   camera.position.lerp(playerGroup.position.clone().add(camOff), 0.1);
   camera.lookAt(playerGroup.position);
 }
 
-// ============ АНИМАЦИЯ ============
+// Мини-карта
+const mmCanvas = document.getElementById('minimap');
+const mmCtx = mmCanvas.getContext('2d');
+function drawMinimap() {
+  mmCtx.clearRect(0, 0, 200, 200);
+  mmCtx.fillStyle = 'rgba(0,40,0,0.7)'; mmCtx.beginPath(); mmCtx.arc(100, 100, 100, 0, Math.PI*2); mmCtx.fill();
+  const scale = 200 / 240; const cx = 100, cy = 100;
+  const target = flyingHeli ? flyingHeli.position : (drivingCar ? drivingCar.position : playerGroup.position);
+  
+  mmCtx.fillStyle = 'rgba(50,120,200,0.7)';
+  mmCtx.fillRect(0, cy - 12*scale, 200, 24*scale);
+  
+  mmCtx.fillStyle = '#aaa'; mmCtx.fillRect(cx - 7*scale, cy - 13*scale, 14*scale, 26*scale);
+  
+  mmCtx.fillStyle = 'rgba(150,150,170,0.8)';
+  buildings.forEach(b => { const dx = (b.x - target.x)*scale, dz = (b.z - target.z)*scale; if (Math.abs(dx) < 100 && Math.abs(dz) < 100) mmCtx.fillRect(cx + dx, cy + dz, 2, 2); });
+  
+  mmCtx.fillStyle = '#ffaa00'; mmCtx.beginPath(); mmCtx.arc(cx + (60 - target.x)*scale, cy + (30 - target.z)*scale, 4, 0, Math.PI*2); mmCtx.fill();
+  
+  mmCtx.fillStyle = '#ff0000';
+  cops.forEach(c => { const dx = (c.position.x - target.x)*scale, dz = (c.position.z - target.z)*scale; if (Math.abs(dx) < 100 && Math.abs(dz) < 100) mmCtx.fillRect(cx + dx - 1, cy + dz - 1, 2, 2); });
+  
+  mmCtx.fillStyle = '#4dff88'; mmCtx.beginPath(); mmCtx.arc(cx, cy, 4, 0, Math.PI*2); mmCtx.fill();
+}
+
+// Анимация
 let frames = 0, last = performance.now();
 function animate() {
   requestAnimationFrame(animate);
   if (gameOver) { renderer.render(scene, camera); return; }
   const dt = Math.min(clock.getDelta(), 0.05);
-
   update(dt);
+  drawMinimap();
 
   if (!inShop) {
     actBtn.style.display = (nearestCar && !drivingCar) || drivingCar ? 'flex' : 'none';
@@ -866,18 +782,12 @@ function animate() {
   }
 
   renderer.render(scene, camera);
-
   frames++;
-  if (performance.now() - last > 1000) {
-    document.getElementById('fps-counter').textContent = 'FPS: ' + frames;
-    frames = 0; last = performance.now();
-  }
+  if (performance.now() - last > 1000) { document.getElementById('fps-counter').textContent = 'FPS: ' + frames; frames = 0; last = performance.now(); }
 }
 
 window.addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight);
 });
 
 setTimeout(() => {
