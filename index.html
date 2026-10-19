@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-<title>Mini-GTA ULTIMATE 3D v5.1</title>
+<title>Mini-GTA ULTIMATE 3D v6</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
@@ -319,7 +319,7 @@
 
 <div id="loading">
   <div class="spinner"></div>
-  <div>Загружаем город v5.1...</div>
+  <div>Загружаем город v6...</div>
 </div>
 
 <div id="hud" style="display:none">
@@ -398,17 +398,16 @@
 <script type="module">
 import * as THREE from 'three';
 
-// ============ СЦЕНА (ОПТИМИЗИРОВАНО) ============
+// ============ СЦЕНА ============
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87CEEB);
-// Туман убран для FPS
 
 const camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 400);
 const renderer = new THREE.WebGLRenderer({ antialias: false });
 renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(1); // ← оптимизация
+renderer.setPixelRatio(1);
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.BasicShadowMap; // ← быстрее
+renderer.shadowMap.type = THREE.BasicShadowMap;
 document.body.appendChild(renderer.domElement);
 
 // ============ СВЕТ ============
@@ -417,12 +416,12 @@ scene.add(ambient);
 const sun = new THREE.DirectionalLight(0xfff4e6, 1.3);
 sun.position.set(50, 80, 30);
 sun.castShadow = true;
-sun.shadow.mapSize.set(1024, 1024); // ← оптимизация
+sun.shadow.mapSize.set(1024, 1024);
 Object.assign(sun.shadow.camera, { left: -80, right: 80, top: 80, bottom: -80, far: 200 });
 scene.add(sun);
 
 // ============ КОНСТАНТЫ ============
-const CITY_SIZE = 200; // ← уменьшено с 300
+const CITY_SIZE = 200;
 const RIVER_WIDTH = 20;
 const RIVER_Y_START = -10;
 const RIVER_Y_END = 10;
@@ -452,7 +451,6 @@ island.position.set(ISLAND_X, 0.75, ISLAND_Z);
 island.receiveShadow = true;
 scene.add(island);
 
-// Пальмы (упрощено)
 for (let i = 0; i < 4; i++) {
   const a = (Math.PI * 2 / 4) * i;
   const px = ISLAND_X + Math.cos(a) * (ISLAND_R - 5);
@@ -471,7 +469,8 @@ for (let i = 0; i < 4; i++) {
   scene.add(leaves);
 }
 
-// ============ ГОРЫ (упрощено) ============
+// ============ ГОРЫ (с коллизиями) ============
+const mountains = [];
 for (let i = 0; i < 3; i++) {
   const mx = -70 + i * 20;
   const mz = -85;
@@ -482,9 +481,22 @@ for (let i = 0; i < 3; i++) {
   );
   mountain.position.set(mx, mh / 2, mz);
   scene.add(mountain);
+
+  const snow = new THREE.Mesh(
+    new THREE.ConeGeometry(4, mh * 0.3, 6),
+    new THREE.MeshStandardMaterial({ color: 0xffffff })
+  );
+  snow.position.set(mx, mh * 0.85, mz);
+  scene.add(snow);
+
+  const data = { x: mx, z: mz, w: 20, d: 20, h: mh, mesh: mountain, isMountain: true };
+  buildings.push(data);
+  buildingHealth.set(mountain, 999);
+  mountains.push(mountain);
 }
 
-// ============ ЛЕС (упрощено) ============
+// ============ ЛЕС ============
+const trees = [];
 for (let i = 0; i < 15; i++) {
   const tx = -90 + Math.random() * 40;
   const tz = 70 + Math.random() * 30;
@@ -494,6 +506,7 @@ for (let i = 0; i < 15; i++) {
   );
   tree.position.set(tx, 3.5, tz);
   scene.add(tree);
+  trees.push(tree);
 }
 
 // ============ РЕКА ============
@@ -532,7 +545,6 @@ function isRiver(x, z) {
   return z > RIVER_Y_START - 2 && z < RIVER_Y_END + 2;
 }
 
-// Город (только чётные блоки — меньше домов)
 for (let bx = -CITY_SIZE / 2; bx < CITY_SIZE / 2; bx += BLOCK) {
   for (let bz = -CITY_SIZE / 2; bz < CITY_SIZE / 2; bz += BLOCK) {
     const qcx = bx + BLOCK / 2;
@@ -567,8 +579,8 @@ for (let bx = -CITY_SIZE / 2; bx < CITY_SIZE / 2; bx += BLOCK) {
   }
 }
 
-// ============ МАГАЗИН (в доме) ============
-const shopBuilding = { x: 50, z: 0, w: 12, d: 12, h: 8 };
+// ============ МАГАЗИН (НА БЕРЕГУ, z=25) ============
+const shopBuilding = { x: 50, z: 25, w: 12, d: 12, h: 8 };
 const shopMesh = new THREE.Mesh(
   new THREE.BoxGeometry(shopBuilding.w, shopBuilding.h, shopBuilding.d),
   new THREE.MeshStandardMaterial({ color: 0xffcc44, roughness: 0.8 })
@@ -581,7 +593,6 @@ buildingHealth.set(shopMesh, 999);
 shopMesh.userData.isShop = true;
 shopMesh.userData.buildingData = shopBuilding;
 
-// Вывеска
 const sign = new THREE.Mesh(
   new THREE.PlaneGeometry(7, 2),
   new THREE.MeshBasicMaterial({ color: 0xffaa00 })
@@ -589,7 +600,6 @@ const sign = new THREE.Mesh(
 sign.position.set(shopBuilding.x, shopBuilding.h - 1, shopBuilding.z + shopBuilding.d / 2 + 0.05);
 scene.add(sign);
 
-// Дверь
 const door = new THREE.Mesh(
   new THREE.PlaneGeometry(2.5, 4),
   new THREE.MeshBasicMaterial({ color: 0x553311 })
@@ -597,7 +607,6 @@ const door = new THREE.Mesh(
 door.position.set(shopBuilding.x, 2, shopBuilding.z + shopBuilding.d / 2 + 0.06);
 scene.add(door);
 
-// Маркер входа
 const shopMarker = new THREE.Mesh(
   new THREE.CylinderGeometry(2, 2, 0.1, 12),
   new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.6 })
@@ -605,11 +614,10 @@ const shopMarker = new THREE.Mesh(
 shopMarker.position.set(shopBuilding.x, 0.1, shopBuilding.z + shopBuilding.d / 2 + 2);
 scene.add(shopMarker);
 
-// ============ ИНТЕРЬЕР МАГАЗИНА (ленивый) ============
+// ============ ИНТЕРЬЕР МАГАЗИНА ============
 const shopInterior = new THREE.Group();
 shopInterior.visible = false;
 
-// Пол
 const shopFloor = new THREE.Mesh(
   new THREE.PlaneGeometry(18, 18),
   new THREE.MeshStandardMaterial({ color: 0x8B7355 })
@@ -618,7 +626,6 @@ shopFloor.rotation.x = -Math.PI / 2;
 shopFloor.position.y = 0.05;
 shopInterior.add(shopFloor);
 
-// Стены
 const wallMat = new THREE.MeshStandardMaterial({ color: 0xddddaa, side: THREE.DoubleSide });
 const wallBack = new THREE.Mesh(new THREE.PlaneGeometry(18, 6), wallMat);
 wallBack.position.set(0, 3, -9);
@@ -632,7 +639,6 @@ wallRight.rotation.y = -Math.PI / 2;
 wallRight.position.set(9, 3, 0);
 shopInterior.add(wallRight);
 
-// Потолок
 const ceiling = new THREE.Mesh(
   new THREE.PlaneGeometry(18, 18),
   new THREE.MeshStandardMaterial({ color: 0xffffcc })
@@ -641,12 +647,10 @@ ceiling.rotation.x = Math.PI / 2;
 ceiling.position.y = 6;
 shopInterior.add(ceiling);
 
-// ОДИН свет
 const shopLight = new THREE.PointLight(0xffffaa, 3, 25);
 shopLight.position.set(0, 5, 0);
 shopInterior.add(shopLight);
 
-// Прилавок
 const counter = new THREE.Mesh(
   new THREE.BoxGeometry(7, 1.2, 2),
   new THREE.MeshStandardMaterial({ color: 0x8B4513 })
@@ -661,7 +665,6 @@ const counterTop = new THREE.Mesh(
 counterTop.position.set(0, 1.27, 0);
 shopInterior.add(counterTop);
 
-// Продавец
 const seller = new THREE.Group();
 const sellerBody = new THREE.Mesh(
   new THREE.BoxGeometry(0.7, 1.2, 0.4),
@@ -678,7 +681,6 @@ seller.add(sellerHead);
 seller.position.set(0, 0, -3);
 shopInterior.add(seller);
 
-// Полки
 const shelfMat = new THREE.MeshStandardMaterial({ color: 0x6b4423 });
 for (let i = 0; i < 2; i++) {
   const shelf = new THREE.Mesh(new THREE.BoxGeometry(7, 0.2, 1.5), shelfMat);
@@ -686,7 +688,6 @@ for (let i = 0; i < 2; i++) {
   shopInterior.add(shelf);
 }
 
-// ТОВАРЫ (4 штуки)
 const shopItems3D = [];
 const shopGoods = [
   { id: 'rocket', name: '🚀 Ракетница', price: 1000, color: 0xff4444, x: -2.7 },
@@ -713,7 +714,7 @@ shopGoods.forEach(g => {
   shopInterior.add(stand);
 });
 
-// ============ МОСТ ============
+// ============ МОСТЫ ============
 const bridgeMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.5, roughness: 0.4 });
 const bridgeDeck = new THREE.Mesh(
   new THREE.BoxGeometry(bridgeWidth, 0.8, RIVER_WIDTH + 10), bridgeMat
@@ -721,7 +722,6 @@ const bridgeDeck = new THREE.Mesh(
 bridgeDeck.position.set(bridgeX, 1, (RIVER_Y_START + RIVER_Y_END) / 2);
 scene.add(bridgeDeck);
 
-// Мост на остров
 const islandBridge = new THREE.Mesh(
   new THREE.BoxGeometry(40, 1, 4),
   new THREE.MeshStandardMaterial({ color: 0x888888 })
@@ -844,7 +844,6 @@ function isInsideBuilding(x, z, radius = 3) {
       return true;
     }
   }
-  // Магазин отдельно
   const s = shopBuilding;
   if (x > s.x - s.w / 2 - radius && x < s.x + s.w / 2 + radius &&
       z > s.z - s.d / 2 - radius && z < s.z + s.d / 2 + radius) {
@@ -871,13 +870,11 @@ function randomRoadPos() {
   return { x: 0, z: 20, angle: 0 };
 }
 
-// 20 машин вместо 32
 for (let i = 0; i < 20; i++) {
   const pos = randomRoadPos();
   makeCar(pos.x, pos.z, types[Math.floor(Math.random() * types.length)], pos.angle);
 }
 
-// Полиция — 4 штуки
 const policeCars = [];
 for (let qi = 0; qi < 4; qi++) {
   const qx = qi % 2 === 0 ? -1 : 1;
@@ -1013,7 +1010,7 @@ function makeBoat() {
 }
 makeBoat();
 
-// ============ ПЕШЕХОДЫ (24 вместо 48) ============
+// ============ ПЕШЕХОДЫ ============
 const pedestrians = [];
 const PED_COLORS = [0xcc4444, 0x44cc44, 0x4444cc, 0xccaa44, 0xaa44cc, 0x44ccaa, 0xffffff];
 const PED_SKIN = [0xffcc99, 0xdd9966, 0xaa7744, 0xffddbb];
@@ -1068,6 +1065,214 @@ for (let qi = 0; qi < 4; qi++) {
     }
     makePedestrian(px, pz);
   }
+}
+
+// ============ ЛЫЖНИК ============
+const skiers = [];
+function makeSkier(startX, startZ, mountainH) {
+  const g = new THREE.Group();
+  // Лыжи
+  const skiMat = new THREE.MeshStandardMaterial({ color: 0xff2222 });
+  const ski1 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.05, 2), skiMat);
+  ski1.position.set(-0.2, 0.05, 0);
+  g.add(ski1);
+  const ski2 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.05, 2), skiMat);
+  ski2.position.set(0.2, 0.05, 0);
+  g.add(ski2);
+  // Тело
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(0.5, 0.9, 0.35),
+    new THREE.MeshStandardMaterial({ color: 0x2244aa })
+  );
+  body.position.y = 0.7;
+  g.add(body);
+  // Голова
+  const headSk = new THREE.Mesh(
+    new THREE.SphereGeometry(0.25, 8, 8),
+    new THREE.MeshStandardMaterial({ color: 0xffcc99 })
+  );
+  headSk.position.y = 1.3;
+  g.add(headSk);
+  // Шапка
+  const hat = new THREE.Mesh(
+    new THREE.SphereGeometry(0.28, 8, 8, 0, Math.PI * 2, 0, Math.PI / 2),
+    new THREE.MeshStandardMaterial({ color: 0xff0000 })
+  );
+  hat.position.y = 1.45;
+  g.add(hat);
+  // Палки
+  const pole1 = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.03, 0.03, 1.2, 4),
+    new THREE.MeshStandardMaterial({ color: 0x888888 })
+  );
+  pole1.position.set(-0.4, 0.6, 0.3);
+  g.add(pole1);
+  const pole2 = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.03, 0.03, 1.2, 4),
+    new THREE.MeshStandardMaterial({ color: 0x888888 })
+  );
+  pole2.position.set(0.4, 0.6, 0.3);
+  g.add(pole2);
+
+  g.position.set(startX, mountainH, startZ);
+  g.rotation.y = Math.PI; // спускается вниз
+  g.userData = {
+    active: true,
+    speed: 4 + Math.random() * 2,
+    startY: mountainH,
+    angle: Math.PI
+  };
+  scene.add(g);
+  skiers.push(g);
+  return g;
+}
+
+// Лыжники на горах
+mountains.forEach((m, i) => {
+  const mh = m.position.y * 2;
+  makeSkier(m.position.x + (Math.random() - 0.5) * 3, m.position.z, mh);
+});
+
+function updateSkiers(dt) {
+  skiers.forEach(sk => {
+    if (!sk.userData.active) return;
+    // Спуск
+    sk.position.y -= sk.userData.speed * dt;
+    sk.position.z += sk.userData.speed * 0.5 * dt;
+    // Вращение (виляет)
+    sk.userData.angle += Math.sin(performance.now() * 0.002) * 0.02;
+    sk.rotation.y = sk.userData.angle;
+    // Достиг земли — исчезает, появляется новый через время
+    if (sk.position.y <= 0.5) {
+      sk.position.y = 0.5;
+      // Создаём брызги
+      explode(sk.position.x, 1, sk.position.z, 0xffffff, 8);
+      sk.userData.active = false;
+      sk.visible = false;
+      setTimeout(() => {
+        // Возвращаем на гору
+        const m = mountains[Math.floor(Math.random() * mountains.length)];
+        sk.position.set(m.position.x + (Math.random() - 0.5) * 3, m.position.y * 2, m.position.z);
+        sk.userData.active = true;
+        sk.visible = true;
+      }, 3000);
+    }
+  });
+}
+
+// ============ МЕДВЕДИ ============
+const bears = [];
+function makeBear(x, z) {
+  const g = new THREE.Group();
+  // Тело
+  const body = new THREE.Mesh(
+    new THREE.SphereGeometry(0.8, 10, 8),
+    new THREE.MeshStandardMaterial({ color: 0x6b4423 })
+  );
+  body.scale.set(1.2, 1, 1.5);
+  body.position.y = 0.8;
+  g.add(body);
+  // Голова
+  const headB = new THREE.Mesh(
+    new THREE.SphereGeometry(0.45, 10, 8),
+    new THREE.MeshStandardMaterial({ color: 0x6b4423 })
+  );
+  headB.position.set(0, 1.4, 0.8);
+  g.add(headB);
+  // Уши
+  for (let s = -1; s <= 1; s += 2) {
+    const ear = new THREE.Mesh(
+      new THREE.SphereGeometry(0.15, 6, 6),
+      new THREE.MeshStandardMaterial({ color: 0x4a2e17 })
+    );
+    ear.position.set(s * 0.25, 1.7, 0.8);
+    g.add(ear);
+  }
+  // Нос
+  const nose = new THREE.Mesh(
+    new THREE.SphereGeometry(0.12, 6, 6),
+    new THREE.MeshStandardMaterial({ color: 0x111111 })
+  );
+  nose.position.set(0, 1.35, 1.2);
+  g.add(nose);
+  // Лапы
+  const legGeo = new THREE.BoxGeometry(0.35, 0.6, 0.35);
+  const legMat = new THREE.MeshStandardMaterial({ color: 0x4a2e17 });
+  [[-0.4, 0.3, 0.4], [0.4, 0.3, 0.4], [-0.4, 0.3, -0.4], [0.4, 0.3, -0.4]].forEach(([px, py, pz]) => {
+    const leg = new THREE.Mesh(legGeo, legMat);
+    leg.position.set(px, py, pz);
+    g.add(leg);
+  });
+
+  g.position.set(x, 0, z);
+  g.userData = {
+    angle: Math.random() * Math.PI * 2,
+    speed: 1.5,
+    state: 'wander', // wander | chase
+    chaseTimer: 0,
+    attackCooldown: 0
+  };
+  scene.add(g);
+  bears.push(g);
+  return g;
+}
+
+// 3 медведя в лесу
+for (let i = 0; i < 3; i++) {
+  const bx = -85 + Math.random() * 30;
+  const bz = 75 + Math.random() * 20;
+  makeBear(bx, bz);
+}
+
+function updateBears(dt) {
+  bears.forEach(b => {
+    const target = drivingCar ? drivingCar.position : playerGroup.position;
+    const dx = target.x - b.position.x;
+    const dz = target.z - b.position.z;
+    const dist = Math.hypot(dx, dz);
+
+    b.userData.attackCooldown = Math.max(0, b.userData.attackCooldown - dt);
+
+    if (dist < 15) {
+      // Атака
+      b.userData.state = 'chase';
+      const ang = Math.atan2(dx, dz);
+      b.userData.angle = ang;
+      const speed = 4;
+      b.position.x += Math.sin(ang) * speed * dt;
+      b.position.z += Math.cos(ang) * speed * dt;
+      b.rotation.y = ang;
+
+      // Анимация "бега" — покачивание
+      b.position.y = Math.abs(Math.sin(performance.now() * 0.01)) * 0.1;
+
+      // Атака вблизи
+      if (dist < 2.5 && b.userData.attackCooldown === 0 && !drivingCar && !flyingHeli) {
+        b.userData.attackCooldown = 3;
+        money = Math.max(0, money - 50);
+        updateMoney();
+        showMessage('🐻 Медведь атаковал! -50 💰', 1500);
+        beep(150, 0.3, 'sawtooth', 0.2);
+        explode(b.position.x, 1, b.position.z, 0xff4444, 10);
+        // Отбрасываем игрока
+        playerGroup.position.x += Math.sin(ang) * 3;
+        playerGroup.position.z += Math.cos(ang) * 3;
+      }
+    } else {
+      // Бродит
+      b.userData.state = 'wander';
+      b.userData.angle += (Math.random() - 0.5) * 0.5;
+      const speed = 1;
+      b.position.x += Math.sin(b.userData.angle) * speed * dt;
+      b.position.z += Math.cos(b.userData.angle) * speed * dt;
+      b.rotation.y = b.userData.angle;
+      b.position.y = 0;
+    }
+
+    // Не уходит из леса
+    b.position.x = Math.max(-100, Math.min(-60, b.position.x));
+    b.position.z = Math.max(60, Math.min(100, b.position.z));
+  });
 }
 
 // ============ КРИСТАЛЛЫ ============
@@ -1125,7 +1330,9 @@ const storyMissions = [
   { id: 'race', name: '🏁 Пройди гонку', desc: 'Собери все чекпоинты', reward: 500, target: 1, progress: 0, done: false },
   { id: 'destroy3', name: '🏚️ Разрушь 3 дома', desc: 'Гранаты помогут', reward: 400, target: 3, progress: 0, done: false },
   { id: 'heli', name: '🚁 Угони вертолёт', desc: 'Найди и сядь в вертолёт', reward: 300, target: 1, progress: 0, done: false },
-  { id: 'boat', name: '🚤 Прокатись на лодке', desc: 'Найди лодку на реке', reward: 200, target: 1, progress: 0, done: false }
+  { id: 'boat', name: '🚤 Прокатись на лодке', desc: 'Найди лодку на реке', reward: 200, target: 1, progress: 0, done: false },
+  { id: 'bear', name: '🐻 Убей медведя', desc: 'Медведи в лесу', reward: 300, target: 1, progress: 0, done: false },
+  { id: 'ski', name: '⛷️ Сбей лыжника', desc: 'Лыжники на горах', reward: 250, target: 1, progress: 0, done: false }
 ];
 let activeMission = null;
 
@@ -1134,7 +1341,6 @@ const checkpoints = [];
 let raceActive = false;
 let raceIndex = 0;
 let raceTime = 0;
-let raceBest = parseFloat(localStorage.getItem('raceBest') || '999');
 
 function startRace() {
   checkpoints.forEach(c => {
@@ -1180,9 +1386,10 @@ function startRace() {
   });
 }
 
-// ============ ПУЛИ И ГРАНАТЫ ============
+// ============ ПУЛИ / ГРАНАТЫ ============
 const bullets = [];
 const grenades = [];
+const ripples = [];
 
 function shoot(from, direction, isEnemy = false) {
   const b = new THREE.Mesh(
@@ -1197,7 +1404,7 @@ function shoot(from, direction, isEnemy = false) {
 }
 
 function throwGrenade() {
-  if (drivingCar || flyingHeli || ridingBoat) return;
+  if (drivingCar || flyingHeli || ridingBoat || inShop) return;
   const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), playerGroup.rotation.y);
   const g = new THREE.Mesh(
     new THREE.SphereGeometry(0.3, 6, 6),
@@ -1251,9 +1458,27 @@ function updateGrenades(dt) {
           stats.peds++;
         }
       });
+      bears.forEach((b, idx) => {
+        if (b.position.distanceTo(g.position) < 6) {
+          explode(b.position.x, 1, b.position.z, 0x6b4423, 15);
+          scene.remove(b);
+          bears.splice(idx, 1);
+          money += 200;
+          if (activeMission && activeMission.id === 'bear') completeMission('bear');
+        }
+      });
+      skiers.forEach((s, idx) => {
+        if (s.position.distanceTo(g.position) < 6 && s.userData.active) {
+          explode(s.position.x, 1, s.position.z, 0xff2222, 15);
+          s.visible = false;
+          s.userData.active = false;
+          money += 100;
+          if (activeMission && activeMission.id === 'ski') completeMission('ski');
+        }
+      });
       buildings.forEach(b => {
+        if (b.isShop || b.isMountain) return;
         const hp = buildingHealth.get(b.mesh) || 3;
-        if (b.userData.isShop) return;
         if (Math.hypot(b.x - g.position.x, b.z - g.position.z) < 8) {
           buildingHealth.set(b.mesh, hp - 1);
           if (hp - 1 <= 0) {
@@ -1324,6 +1549,41 @@ function updateBullets(dt) {
       }
     }
     if (!hit) {
+      for (let bi = bears.length - 1; bi >= 0; bi--) {
+        const bear = bears[bi];
+        const bearCenter = bear.position.clone();
+        bearCenter.y += 1;
+        if (bearCenter.distanceTo(b.position) < 1.5) {
+          explode(bear.position.x, 1, bear.position.z, 0x6b4423, 15);
+          scene.remove(bear);
+          bears.splice(bi, 1);
+          money += 200;
+          updateMoney();
+          showMessage('🐻 Медведь убит! +200 💰', 1200);
+          if (activeMission && activeMission.id === 'bear') completeMission('bear');
+          hit = true;
+          break;
+        }
+      }
+    }
+    if (!hit) {
+      for (let si = 0; si < skiers.length; si++) {
+        const sk = skiers[si];
+        if (!sk.userData.active) continue;
+        if (sk.position.distanceTo(b.position) < 1.5) {
+          explode(sk.position.x, 1, sk.position.z, 0xff2222, 15);
+          sk.visible = false;
+          sk.userData.active = false;
+          money += 100;
+          updateMoney();
+          showMessage('⛷️ Лыжник сбит! +100 💰', 1200);
+          if (activeMission && activeMission.id === 'ski') completeMission('ski');
+          hit = true;
+          break;
+        }
+      }
+    }
+    if (!hit) {
       for (const ph of policeHelis) {
         if (ph.position.distanceTo(b.position) < 3) {
           ph.userData.health = (ph.userData.health || 5) - 1;
@@ -1381,6 +1641,17 @@ function updateParticles(dt) {
       particles.splice(i, 1);
     }
   }
+  // Круги на воде
+  for (let i = ripples.length - 1; i >= 0; i--) {
+    const r = ripples[i];
+    r.userData.life -= dt * 2;
+    r.scale.setScalar(1 + (1 - r.userData.life) * 3);
+    r.material.opacity = r.userData.life * 0.6;
+    if (r.userData.life <= 0) {
+      scene.remove(r);
+      ripples.splice(i, 1);
+    }
+  }
 }
 
 // ============ ЗВУКИ ============
@@ -1414,6 +1685,14 @@ let inventory = { rocket: false, armor: false };
 let inHospital = false;
 let inShop = false;
 let nearShopItem = null;
+let isSwimming = false;
+let drivingCar = null;
+let flyingHeli = null;
+let ridingBoat = null;
+let carSpeed = 0;
+let boatSpeed = 0;
+let nearestCar = null;
+let nearestHeli = null;
 
 const moneyEl = document.getElementById('money');
 const wantedEl = document.getElementById('wanted');
@@ -1519,14 +1798,6 @@ const repairBtn = document.getElementById('repair-btn');
 const musicBtn = document.getElementById('music-btn');
 const buyBtn = document.getElementById('buy-btn');
 const exitShopBtn = document.getElementById('exit-shop-btn');
-
-let nearestCar = null;
-let nearestHeli = null;
-let drivingCar = null;
-let flyingHeli = null;
-let ridingBoat = null;
-let carSpeed = 0;
-let boatSpeed = 0;
 
 function bindBtn(btn, fn) {
   btn.addEventListener('touchstart', e => { e.preventDefault(); fn(); }, { passive: false });
@@ -1652,7 +1923,7 @@ function doRepair() {
   let nearest = null;
   let minD = 15;
   buildings.forEach(b => {
-    if (b.isShop) return;
+    if (b.isShop || b.isMountain) return;
     const hp = buildingHealth.get(b.mesh);
     if (hp !== undefined && hp < 3 && hp > 0) {
       const d = Math.hypot(b.x - playerGroup.position.x, b.z - playerGroup.position.z);
@@ -1677,6 +1948,7 @@ function enterShop() {
   if (inShop) return;
   if (!scene.children.includes(shopInterior)) scene.add(shopInterior);
   inShop = true;
+  isSwimming = false;
   shopInterior.visible = true;
   shopMesh.visible = false;
   shopMarker.visible = false;
@@ -1764,6 +2036,7 @@ function completeMission(id) {
 function goToHospital(reason) {
   inHospital = true;
   gameOver = false;
+  isSwimming = false;
   wanted = 0;
   updateWanted();
   money = Math.max(0, money - 100);
@@ -1820,7 +2093,7 @@ let walkCycle = 0;
 function updatePlayer(dt) {
   if (inShop) return;
 
-  // Проверка входа в магазин
+  // Вход в магазин
   if (!drivingCar && !flyingHeli && !ridingBoat) {
     const dxShop = playerGroup.position.x - shopBuilding.x;
     const dzShop = playerGroup.position.z - (shopBuilding.z + shopBuilding.d / 2 + 2);
@@ -1841,32 +2114,86 @@ function updatePlayer(dt) {
   if (keys['arrowright']) dx = 1;
 
   const len = Math.hypot(dx, dz);
+
+  const inWater = isRiver(playerGroup.position.x, playerGroup.position.z) && 
+                  !isOnBridge(playerGroup.position.x, playerGroup.position.z);
+  if (inWater && !isSwimming) {
+    isSwimming = true;
+    showMessage('🏊 Плывёшь!', 800);
+  } else if (!inWater && isSwimming) {
+    isSwimming = false;
+    showMessage('Вышел на берег', 600);
+  }
+
   if (len > 0.1 && !drivingCar && !flyingHeli && !ridingBoat && !inHospital) {
     dx /= len; dz /= len;
-    const newX = playerGroup.position.x + dx * 5 * dt;
-    const newZ = playerGroup.position.z + dz * 5 * dt;
-    if (!isInRiver(newX, newZ)) {
+    const speed = isSwimming ? 2.5 : 5;
+    const newX = playerGroup.position.x + dx * speed * dt;
+    const newZ = playerGroup.position.z + dz * speed * dt;
+
+    if (isSwimming || !isInRiver(newX, newZ)) {
       playerGroup.position.x = newX;
       playerGroup.position.z = newZ;
     }
-    collideBuilding(playerGroup.position, 0.5);
+
+    if (!isSwimming) {
+      collideBuilding(playerGroup.position, 0.5);
+    }
+
     playerGroup.position.x = Math.max(-CITY_SIZE / 2, Math.min(CITY_SIZE / 2, playerGroup.position.x));
     playerGroup.position.z = Math.max(-CITY_SIZE / 2, Math.min(CITY_SIZE / 2, playerGroup.position.z));
     playerGroup.rotation.y = Math.atan2(dx, dz);
-    walkCycle += dt * 10;
-    legs[0].rotation.x = Math.sin(walkCycle) * 0.6;
-    legs[1].rotation.x = -Math.sin(walkCycle) * 0.6;
-    arms[0].rotation.x = -Math.sin(walkCycle) * 0.4;
-    arms[1].rotation.x = Math.sin(walkCycle) * 0.4;
+
+    if (isSwimming) {
+      walkCycle += dt * 6;
+      arms[0].rotation.x = Math.sin(walkCycle) * 1.2;
+      arms[1].rotation.x = -Math.sin(walkCycle) * 1.2;
+      arms[0].rotation.z = Math.cos(walkCycle) * 0.5;
+      arms[1].rotation.z = -Math.cos(walkCycle) * 0.5;
+      legs[0].rotation.x = Math.sin(walkCycle * 1.5) * 0.4;
+      legs[1].rotation.x = -Math.sin(walkCycle * 1.5) * 0.4;
+      torso.rotation.x = -0.4;
+      head.position.y = 1.9;
+
+      if (Math.random() < 0.1) {
+        const ripple = new THREE.Mesh(
+          new THREE.RingGeometry(0.3, 0.5, 8),
+          new THREE.MeshBasicMaterial({ color: 0xaaddff, transparent: true, opacity: 0.6, side: THREE.DoubleSide })
+        );
+        ripple.rotation.x = -Math.PI / 2;
+        ripple.position.set(playerGroup.position.x, 0.1, playerGroup.position.z);
+        ripple.userData = { life: 1 };
+        scene.add(ripple);
+        ripples.push(ripple);
+      }
+    } else {
+      walkCycle += dt * 10;
+      legs[0].rotation.x = Math.sin(walkCycle) * 0.6;
+      legs[1].rotation.x = -Math.sin(walkCycle) * 0.6;
+      arms[0].rotation.x = -Math.sin(walkCycle) * 0.4;
+      arms[1].rotation.x = Math.sin(walkCycle) * 0.4;
+      arms[0].rotation.z = 0;
+      arms[1].rotation.z = 0;
+      torso.rotation.x = 0;
+      head.position.y = 2;
+    }
   } else {
     legs[0].rotation.x *= 0.9;
     legs[1].rotation.x *= 0.9;
     arms[0].rotation.x *= 0.9;
     arms[1].rotation.x *= 0.9;
+    arms[0].rotation.z *= 0.9;
+    arms[1].rotation.z *= 0.9;
+    torso.rotation.x *= 0.9;
+  }
+
+  if (isSwimming) {
+    playerGroup.position.y = -0.3 + Math.sin(performance.now() * 0.003) * 0.05;
+  } else {
+    playerGroup.position.y = 0;
   }
 }
 
-// === ЛОГИКА В МАГАЗИНЕ ===
 function updateShopLogic(dt) {
   if (!inShop) return;
   let dx = joystick.x, dz = joystick.y;
@@ -2039,6 +2366,25 @@ function updateHeli(dt) {
   const newX = flyingHeli.position.x + forward.x * throttle * 25 * dt;
   const newZ = flyingHeli.position.z + forward.z * throttle * 25 * dt;
 
+  // Столкновения
+  let hitHeli = null;
+  helis.forEach(h => {
+    if (h === flyingHeli || h.userData.crashed) return;
+    const dx = newX - h.position.x;
+    const dy = flyingHeli.position.y - h.position.y;
+    const dz = newZ - h.position.z;
+    if (Math.sqrt(dx*dx + dy*dy + dz*dz) < 4) hitHeli = h;
+  });
+
+  let hitPoliceHeli = null;
+  policeHelis.forEach(ph => {
+    if (ph.userData.isCrashed) return;
+    const dx = newX - ph.position.x;
+    const dy = flyingHeli.position.y - ph.position.y;
+    const dz = newZ - ph.position.z;
+    if (Math.sqrt(dx*dx + dy*dy + dz*dz) < 4) hitPoliceHeli = ph;
+  });
+
   let hitBuilding = null;
   for (const b of buildings) {
     const bHp = buildingHealth.get(b.mesh) || 0;
@@ -2052,25 +2398,64 @@ function updateHeli(dt) {
     }
   }
 
-  if (hitBuilding) {
+  if (hitPoliceHeli) {
+    explode(flyingHeli.position.x, flyingHeli.position.y, flyingHeli.position.z, 0xff4400, 25);
+    explode(hitPoliceHeli.position.x, hitPoliceHeli.position.y, hitPoliceHeli.position.z, 0xff0000, 25);
+    beep(100, 0.4, 'sawtooth', 0.3);
+    const curHp = heliHealth.get(flyingHeli) || 5;
+    heliHealth.set(flyingHeli, curHp - 2);
+    hitPoliceHeli.userData.health = (hitPoliceHeli.userData.health || 5) - 3;
+    if (hitPoliceHeli.userData.health <= 0) {
+      hitPoliceHeli.userData.isCrashed = true;
+      scene.remove(hitPoliceHeli);
+      policeHelis.splice(policeHelis.indexOf(hitPoliceHeli), 1);
+      money += 500;
+      updateMoney();
+      showMessage('💥 Полицейский вертолёт сбит! +500 💰', 2000);
+    }
+    if (curHp - 2 <= 0) {
+      flyingHeli.userData.isCrashed = true;
+      explode(flyingHeli.position.x, flyingHeli.position.y, flyingHeli.position.z, 0xff0000, 40);
+    } else {
+      flyingHeli.position.x -= forward.x * 3;
+      flyingHeli.position.z -= forward.z * 3;
+      showMessage('💥 Столкновение!', 1500);
+    }
+  } else if (hitHeli) {
+    explode(flyingHeli.position.x, flyingHeli.position.y, flyingHeli.position.z, 0xff8800, 20);
+    beep(100, 0.3, 'sawtooth', 0.2);
+    const curHp = heliHealth.get(flyingHeli) || 5;
+    heliHealth.set(flyingHeli, curHp - 1);
+    if (curHp - 1 <= 0) {
+      flyingHeli.userData.isCrashed = true;
+    } else {
+      flyingHeli.position.x -= forward.x * 2;
+      flyingHeli.position.z -= forward.z * 2;
+      showMessage('💥 Столкновение с вертолётом!', 1200);
+    }
+  } else if (hitBuilding) {
     const impactSpeed = Math.abs(throttle) * 25;
     if (impactSpeed > 5) {
       explode(flyingHeli.position.x, flyingHeli.position.y, flyingHeli.position.z, 0xff4400, 20);
       beep(100, 0.3, 'sawtooth', 0.3);
       const curHp = heliHealth.get(flyingHeli) || 5;
       heliHealth.set(flyingHeli, curHp - 1);
-      const bHp = (buildingHealth.get(hitBuilding.mesh) || 3) - 1;
-      buildingHealth.set(hitBuilding.mesh, bHp);
-      if (bHp <= 0) {
-        hitBuilding.mesh.material.color.setHex(0x444444);
-        hitBuilding.mesh.scale.y *= 0.3;
-        hitBuilding.mesh.position.y = hitBuilding.mesh.scale.y * 2;
-        money += 200;
-        stats.buildings++;
-        updateMoney();
-        updateStats();
+      if (!hitBuilding.isMountain) {
+        const bHp = (buildingHealth.get(hitBuilding.mesh) || 3) - 1;
+        buildingHealth.set(hitBuilding.mesh, bHp);
+        if (bHp <= 0) {
+          hitBuilding.mesh.material.color.setHex(0x444444);
+          hitBuilding.mesh.scale.y *= 0.3;
+          hitBuilding.mesh.position.y = hitBuilding.mesh.scale.y * 2;
+          money += 200;
+          stats.buildings++;
+          updateMoney();
+          updateStats();
+        } else {
+          hitBuilding.mesh.material.color.multiplyScalar(0.7);
+        }
       } else {
-        hitBuilding.mesh.material.color.multiplyScalar(0.7);
+        showMessage('⛰️ Гора! Урон вертолёту', 1500);
       }
       if (curHp - 1 <= 0) {
         explode(flyingHeli.position.x, flyingHeli.position.y, flyingHeli.position.z, 0xff0000, 30);
@@ -2079,6 +2464,8 @@ function updateHeli(dt) {
         flyingHeli.position.x -= forward.x * 2;
         flyingHeli.position.z -= forward.z * 2;
       }
+    } else {
+      showMessage('⬆️ Поднимись выше!', 800);
     }
   } else {
     flyingHeli.position.x = newX;
@@ -2351,10 +2738,12 @@ function updateCamera(dt) {
     camera.position.lerp(target, 0.12);
     camera.lookAt(drivingCar.position.clone().add(new THREE.Vector3(0, 1, 0)));
   } else {
+    const height = isSwimming ? 5 : 6.5;
+    const dist = isSwimming ? -6 : -8;
     const offset = new THREE.Vector3(
-      Math.sin(playerGroup.rotation.y) * -8,
-      6.5,
-      Math.cos(playerGroup.rotation.y) * -8
+      Math.sin(playerGroup.rotation.y) * dist,
+      height,
+      Math.cos(playerGroup.rotation.y) * dist
     );
     const target = playerGroup.position.clone().add(offset);
     camera.position.lerp(target, 0.1);
@@ -2392,7 +2781,7 @@ function drawMinimap() {
 
   // Дома
   buildings.forEach(b => {
-    if (b.isShop) return;
+    if (b.isShop || b.isMountain) return;
     const hp = buildingHealth.get(b.mesh) || 0;
     mctx.fillStyle = hp > 0 ? 'rgba(150,150,170,0.6)' : 'rgba(80,80,80,0.6)';
     const dx = (b.x - target.x) * scale;
@@ -2402,7 +2791,7 @@ function drawMinimap() {
     }
   });
 
-  // МАГАЗИН
+  // Магазин
   {
     const dx = (shopBuilding.x - target.x) * scale;
     const dz = (shopBuilding.z - target.z) * scale;
@@ -2416,6 +2805,31 @@ function drawMinimap() {
       mctx.stroke();
     }
   }
+
+  // Медведи
+  bears.forEach(b => {
+    const dx = (b.position.x - target.x) * scale;
+    const dz = (b.position.z - target.z) * scale;
+    if (Math.abs(dx) < MM_SIZE / 2 && Math.abs(dz) < MM_SIZE / 2) {
+      mctx.fillStyle = '#6b4423';
+      mctx.beginPath();
+      mctx.arc(cx + dx, cy + dz, 4, 0, Math.PI * 2);
+      mctx.fill();
+    }
+  });
+
+  // Лыжники
+  skiers.forEach(sk => {
+    if (!sk.userData.active) return;
+    const dx = (sk.position.x - target.x) * scale;
+    const dz = (sk.position.z - target.z) * scale;
+    if (Math.abs(dx) < MM_SIZE / 2 && Math.abs(dz) < MM_SIZE / 2) {
+      mctx.fillStyle = '#ff2222';
+      mctx.beginPath();
+      mctx.arc(cx + dx, cy + dz, 3, 0, Math.PI * 2);
+      mctx.fill();
+    }
+  });
 
   // Полиция
   policeCars.forEach(pc => {
@@ -2509,7 +2923,7 @@ function drawMinimap() {
   mctx.translate(cx, cy);
   const angle = flyingHeli ? flyingHeli.userData.angle : (ridingBoat ? boat.rotation.y : (drivingCar ? drivingCar.rotation.y : playerGroup.rotation.y));
   mctx.rotate(angle);
-  mctx.fillStyle = '#4dff88';
+  mctx.fillStyle = isSwimming ? '#00ffff' : '#4dff88';
   mctx.beginPath();
   mctx.moveTo(0, -8);
   mctx.lineTo(5, 6);
@@ -2548,6 +2962,7 @@ window.resetGame = function() {
   raceActive = false;
   inHospital = false;
   inShop = false;
+  isSwimming = false;
   shopInterior.visible = false;
   shopMesh.visible = true;
   shopMarker.visible = true;
@@ -2593,7 +3008,7 @@ window.resetGame = function() {
   });
 
   buildings.forEach(b => {
-    if (b.isShop) return;
+    if (b.isShop || b.isMountain) return;
     buildingHealth.set(b.mesh, 3);
     b.mesh.material.color.setHex(BUILDING_COLORS[Math.floor(Math.random() * BUILDING_COLORS.length)]);
     b.mesh.scale.set(1, 1, 1);
@@ -2611,6 +3026,19 @@ window.resetGame = function() {
   bullets.length = 0;
   grenades.forEach(g => scene.remove(g));
   grenades.length = 0;
+
+  // Возвращаем медведей и лыжников
+  bears.forEach(b => scene.remove(b));
+  bears.length = 0;
+  for (let i = 0; i < 3; i++) {
+    makeBear(-85 + Math.random() * 30, 75 + Math.random() * 20);
+  }
+  skiers.forEach(s => scene.remove(s));
+  skiers.length = 0;
+  mountains.forEach(m => {
+    const mh = m.position.y * 2;
+    makeSkier(m.position.x + (Math.random() - 0.5) * 3, m.position.z, mh);
+  });
 
   spawnMissionMarker();
   document.getElementById('gameover-modal').style.display = 'none';
@@ -2656,6 +3084,7 @@ function updateFPS() {
 
 // ============ АНИМАЦИЯ ============
 const clock = new THREE.Clock();
+let frameCount = 0;
 
 function animate() {
   requestAnimationFrame(animate);
@@ -2673,6 +3102,8 @@ function animate() {
   updatePoliceHelis(dt);
   updatePolice(dt);
   updatePedestrians(dt);
+  updateSkiers(dt);
+  updateBears(dt);
   updateCrystals(dt);
   updateMissionMarker(dt);
   updateRace(dt);
@@ -2683,7 +3114,6 @@ function animate() {
   updateCamera(dt);
   updateFPS();
 
-  // Кнопки
   if (inShop) {
     actionBtn.style.display = 'none';
     shootBtn.style.display = 'none';
@@ -2724,7 +3154,7 @@ function animate() {
 
     let hasDamaged = false;
     buildings.forEach(b => {
-      if (b.isShop) return;
+      if (b.isShop || b.isMountain) return;
       const hp = buildingHealth.get(b.mesh);
       if (hp !== undefined && hp < 3 && hp > 0) {
         if (Math.hypot(b.x - playerGroup.position.x, b.z - playerGroup.position.z) < 15) {
@@ -2807,8 +3237,6 @@ function animate() {
 
   renderer.render(scene, camera);
 }
-
-let frameCount = 0;
 
 window.addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;
