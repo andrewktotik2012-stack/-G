@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-<title>Mini-GTA MEGA 3D v3</title>
+<title>Mini-GTA MEGA 3D v4</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
@@ -43,66 +43,80 @@
     text-align: center;
     border-left: 3px solid #ffdd00;
   }
+  #hud .stats {
+    background: rgba(0,0,0,0.4);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 400;
+    margin-top: 4px;
+  }
 
   .action-btn {
     position: absolute;
-    width: 85px; height: 85px;
+    width: 75px; height: 75px;
     border-radius: 50%;
     display: none;
     align-items: center;
     justify-content: center;
     text-align: center;
     font-weight: 800;
-    font-size: 12px;
+    font-size: 11px;
     z-index: 20;
     border: 3px solid #fff;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     color: #000;
   }
   #action-btn {
-    bottom: 40px; right: 30px;
+    bottom: 30px; right: 20px;
     background: rgba(255, 220, 0, 0.9);
     box-shadow: 0 0 25px rgba(255, 220, 0, 0.7);
   }
   #shoot-btn {
-    bottom: 40px; right: 130px;
+    bottom: 30px; right: 105px;
     background: rgba(255, 80, 80, 0.9);
     box-shadow: 0 0 25px rgba(255, 80, 80, 0.7);
     color: #fff;
   }
+  #grenade-btn {
+    bottom: 30px; right: 190px;
+    background: rgba(80, 200, 80, 0.9);
+    box-shadow: 0 0 25px rgba(80, 200, 80, 0.7);
+    color: #fff;
+  }
   #race-btn {
-    bottom: 140px; right: 30px;
+    bottom: 115px; right: 20px;
     background: rgba(80, 200, 255, 0.9);
     box-shadow: 0 0 25px rgba(80, 200, 255, 0.7);
   }
   #heli-btn {
-    bottom: 140px; right: 130px;
+    bottom: 115px; right: 105px;
     background: rgba(180, 100, 255, 0.9);
     box-shadow: 0 0 25px rgba(180, 100, 255, 0.7);
     color: #fff;
   }
   #boat-btn {
-    bottom: 240px; right: 30px;
+    bottom: 115px; right: 190px;
     background: rgba(0, 150, 200, 0.9);
     box-shadow: 0 0 25px rgba(0, 150, 200, 0.7);
     color: #fff;
   }
   #heli-up-btn, #heli-down-btn {
     position: absolute;
-    width: 70px; height: 70px;
+    width: 65px; height: 65px;
     border-radius: 50%;
     display: none;
     align-items: center;
     justify-content: center;
-    font-size: 30px;
+    font-size: 28px;
     font-weight: bold;
     z-index: 20;
     border: 3px solid #fff;
     color: #000;
     background: rgba(180, 100, 255, 0.9);
   }
-  #heli-up-btn { bottom: 240px; right: 130px; }
-  #heli-down-btn { bottom: 240px; right: 30px; }
+  #heli-up-btn { bottom: 200px; right: 105px; }
+  #heli-down-btn { bottom: 200px; right: 20px; }
 
   #joystick-zone {
     position: absolute;
@@ -155,7 +169,7 @@
     top: 25%; left: 50%;
     transform: translateX(-50%);
     color: #fff;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 800;
     text-shadow: 0 0 15px #000;
     opacity: 0;
@@ -169,6 +183,24 @@
     border-radius: 12px;
     border: 2px solid rgba(255,255,255,0.3);
   }
+
+  #achievement {
+    position: absolute;
+    top: 20%; left: 50%;
+    transform: translateX(-50%) scale(0);
+    background: linear-gradient(135deg, #ffdd00, #ffaa00);
+    color: #000;
+    padding: 15px 30px;
+    border-radius: 15px;
+    font-weight: bold;
+    font-size: 18px;
+    z-index: 40;
+    box-shadow: 0 0 30px rgba(255, 200, 0, 0.8);
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    pointer-events: none;
+    text-align: center;
+  }
+  #achievement.show { transform: translateX(-50%) scale(1); }
 
   #minimap {
     position: absolute;
@@ -196,6 +228,21 @@
     z-index: 20;
     font-weight: bold;
   }
+  #repair-btn {
+    position: absolute;
+    top: 70px; left: 66px;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: rgba(100,255,100,0.2);
+    border: 2px solid rgba(100,255,100,0.6);
+    color: #fff;
+    font-size: 18px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    font-weight: bold;
+  }
 
   #gameover-modal {
     position: absolute; inset: 0;
@@ -210,10 +257,10 @@
     padding: 20px;
   }
   #gameover-modal h1 { color: #ff4444; font-size: 32px; margin-bottom: 15px; }
-  #gameover-modal p { font-size: 18px; margin: 6px 0; color: #ccc; }
+  #gameover-modal p { font-size: 16px; margin: 4px 0; color: #ccc; }
   #gameover-modal .big { font-size: 28px; color: #4dff88; font-weight: bold; margin: 15px 0; }
   #gameover-modal button {
-    margin-top: 25px;
+    margin-top: 20px;
     padding: 15px 40px;
     font-size: 18px;
     background: #4dff88;
@@ -227,7 +274,7 @@
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 30px; height: 30px;
+    width: 40px; height: 40px;
     border: 2px solid rgba(255,80,80,0.8);
     border-radius: 50%;
     display: none;
@@ -240,12 +287,15 @@
     background: rgba(255,80,80,0.8);
   }
   #crosshair::before {
-    top: 50%; left: -8px; right: -8px; height: 2px;
+    top: 50%; left: -10px; right: -10px; height: 2px;
     transform: translateY(-50%);
   }
   #crosshair::after {
-    left: 50%; top: -8px; bottom: -8px; width: 2px;
+    left: 50%; top: -10px; bottom: -10px; width: 2px;
     transform: translateX(-50%);
+  }
+  #crosshair::after {
+    box-shadow: inset 0 0 0 1px rgba(255,80,80,0.4);
   }
 </style>
 </head>
@@ -253,7 +303,7 @@
 
 <div id="loading">
   <div class="spinner"></div>
-  <div>Строим город...</div>
+  <div>Строим мега-город...</div>
 </div>
 
 <div id="hud" style="display:none">
@@ -262,6 +312,7 @@
     <br>
     ⭐ <span class="wanted" id="wanted" style="display:none">0</span>
     <div id="race-hud" style="display:none"></div>
+    <div class="stats" id="stats-hud">👤0 🚗0 🏚️0</div>
   </div>
   <div>
     <div class="task" id="task">Найди жёлтую метку</div>
@@ -270,7 +321,9 @@
 
 <canvas id="minimap" width="220" height="220"></canvas>
 <div id="reset-btn">↻</div>
+<div id="repair-btn">🔧</div>
 <div id="crosshair"></div>
+<div id="achievement"></div>
 
 <div id="joystick-zone" style="display:none">
   <div id="joystick-base"></div>
@@ -279,9 +332,10 @@
 
 <div id="action-btn" class="action-btn">СЕСТЬ</div>
 <div id="shoot-btn" class="action-btn">🔫</div>
-<div id="race-btn" class="action-btn">🏁<br>ГОНКА</div>
+<div id="grenade-btn" class="action-btn">💣</div>
+<div id="race-btn" class="action-btn">🏁</div>
 <div id="heli-btn" class="action-btn">🚁<br>СЕСТЬ</div>
-<div id="boat-btn" class="action-btn">🚤<br>ЛОДКА</div>
+<div id="boat-btn" class="action-btn">🚤<br>СЕСТЬ</div>
 <div id="heli-up-btn">⬆️</div>
 <div id="heli-down-btn">⬇️</div>
 
@@ -292,6 +346,7 @@
   <p id="go-subtitle">Тебя поймала полиция!</p>
   <div class="big">💰 <span id="final-money">0</span></div>
   <p>Рекорд: <span id="best-money">0</span></p>
+  <p id="stats-final"></p>
   <button onclick="resetGame()">Играть снова</button>
 </div>
 
@@ -348,11 +403,7 @@ scene.add(ground);
 const water = new THREE.Mesh(
   new THREE.PlaneGeometry(CITY_SIZE, RIVER_WIDTH),
   new THREE.MeshStandardMaterial({
-    color: 0x2a6aae,
-    metalness: 0.7,
-    roughness: 0.2,
-    transparent: true,
-    opacity: 0.85
+    color: 0x2a6aae, metalness: 0.7, roughness: 0.2, transparent: true, opacity: 0.85
   })
 );
 water.rotation.x = -Math.PI / 2;
@@ -372,6 +423,7 @@ scene.add(bankS);
 
 // ============ ГОРОД ============
 const buildings = [];
+const buildingHealth = new Map(); // mesh -> hp (3 макс)
 const BUILDING_COLORS = [0x8899aa, 0xaa9988, 0x778899, 0x998877, 0xaaaabb, 0x9a8a7a, 0x8a9a8a];
 const windowMaterial = new THREE.MeshBasicMaterial({ color: 0xffee88 });
 const windowMaterialBlue = new THREE.MeshBasicMaterial({ color: 0x88ccff });
@@ -401,7 +453,10 @@ function makeBuilding(x, z, w, d, h) {
       }
     }
   }
-  buildings.push({ x, z, w, d, h });
+  const data = { x, z, w, d, h, mesh };
+  buildings.push(data);
+  buildingHealth.set(mesh, 3);
+  mesh.userData.buildingData = data;
 }
 
 function isRiver(x, z) {
@@ -442,8 +497,7 @@ for (let bx = -CITY_SIZE / 2; bx < CITY_SIZE / 2; bx += BLOCK) {
 // ============ МОСТ ============
 const bridgeMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.5, roughness: 0.4 });
 const bridgeDeck = new THREE.Mesh(
-  new THREE.BoxGeometry(bridgeWidth, 0.8, RIVER_WIDTH + 10),
-  bridgeMat
+  new THREE.BoxGeometry(bridgeWidth, 0.8, RIVER_WIDTH + 10), bridgeMat
 );
 bridgeDeck.position.set(bridgeX, 1, (RIVER_Y_START + RIVER_Y_END) / 2);
 bridgeDeck.castShadow = true;
@@ -453,8 +507,7 @@ scene.add(bridgeDeck);
 const railMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, metalness: 0.7 });
 for (let side = -1; side <= 1; side += 2) {
   const rail = new THREE.Mesh(
-    new THREE.BoxGeometry(0.3, 1.2, RIVER_WIDTH + 10),
-    railMat
+    new THREE.BoxGeometry(0.3, 1.2, RIVER_WIDTH + 10), railMat
   );
   rail.position.set(bridgeX + side * (bridgeWidth / 2 - 0.2), 2, (RIVER_Y_START + RIVER_Y_END) / 2);
   scene.add(rail);
@@ -473,7 +526,6 @@ for (let z = RIVER_Y_START - 3; z <= RIVER_Y_END + 3; z += 8) {
 
 // ============ ИГРОК ============
 const playerGroup = new THREE.Group();
-
 const torso = new THREE.Mesh(
   new THREE.BoxGeometry(0.7, 1.2, 0.4),
   new THREE.MeshStandardMaterial({ color: 0x2255cc })
@@ -647,7 +699,6 @@ for (let qi = 0; qi < 4; qi++) {
   }
 }
 
-// Полиция — по одной в каждом квадранте, ВНЕ домов и ВНЕ реки
 const policeCars = [];
 for (let qi = 0; qi < 4; qi++) {
   const qx = qi % 2 === 0 ? -1 : 1;
@@ -663,6 +714,7 @@ for (let qi = 0; qi < 4; qi++) {
 
 // ============ ВЕРТОЛЁТЫ ============
 const helis = [];
+const heliHealth = new Map();
 function makeHeli(x, z) {
   const g = new THREE.Group();
 
@@ -704,9 +756,10 @@ function makeHeli(x, z) {
   g.add(tailRotor);
 
   g.position.set(x, 0.8, z);
-  g.userData = { rotor, tailRotor, angle: 0, grounded: true };
+  g.userData = { rotor, tailRotor, angle: 0, grounded: true, isCrashed: false, crashed: false };
   scene.add(g);
   helis.push(g);
+  heliHealth.set(g, 5);
   return g;
 }
 
@@ -717,7 +770,6 @@ makeHeli(-30, 30);
 let boat = null;
 function makeBoat() {
   const g = new THREE.Group();
-
   const hull = new THREE.Mesh(
     new THREE.BoxGeometry(2.5, 0.6, 5),
     new THREE.MeshStandardMaterial({ color: 0x8B4513, roughness: 0.8 })
@@ -725,14 +777,12 @@ function makeBoat() {
   hull.position.y = 0.3;
   hull.castShadow = true;
   g.add(hull);
-
   const bottom = new THREE.Mesh(
     new THREE.BoxGeometry(2, 0.4, 4),
     new THREE.MeshStandardMaterial({ color: 0x654321 })
   );
   bottom.position.y = -0.1;
   g.add(bottom);
-
   const cabin = new THREE.Mesh(
     new THREE.BoxGeometry(1.5, 0.8, 2),
     new THREE.MeshStandardMaterial({ color: 0xdddddd })
@@ -740,15 +790,12 @@ function makeBoat() {
   cabin.position.set(0, 1, -0.5);
   cabin.castShadow = true;
   g.add(cabin);
-
   const windshield = new THREE.Mesh(
     new THREE.BoxGeometry(1.3, 0.5, 0.1),
     new THREE.MeshStandardMaterial({ color: 0x88ccff, metalness: 0.9, roughness: 0.1, transparent: true, opacity: 0.7 })
   );
   windshield.position.set(0, 1.1, 0.5);
   g.add(windshield);
-
-  // Мотор
   const motor = new THREE.Mesh(
     new THREE.BoxGeometry(0.6, 0.8, 0.6),
     new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.8 })
@@ -756,7 +803,6 @@ function makeBoat() {
   motor.position.set(0, 0.6, -2.5);
   g.add(motor);
 
-  // Место на реке (вне моста)
   g.position.set(-30, 0.3, 0);
   g.userData = { angle: Math.PI / 2 };
   g.rotation.y = g.userData.angle;
@@ -830,6 +876,27 @@ for (let qi = 0; qi < 4; qi++) {
     makePedestrian(px, pz);
   }
 }
+
+// ============ БОНУС-КРИСТАЛЛЫ ============
+const crystals = [];
+function spawnCrystal() {
+  const c = new THREE.Mesh(
+    new THREE.OctahedronGeometry(0.8, 0),
+    new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00aaaa, emissiveIntensity: 1.5 })
+  );
+  let x, z;
+  for (let a = 0; a < 30; a++) {
+    x = (Math.random() - 0.5) * (CITY_SIZE - 20);
+    z = (Math.random() - 0.5) * (CITY_SIZE - 20);
+    if (!isRiver(x, z) && !isInsideBuilding(x, z, 2)) break;
+  }
+  c.position.set(x, 1.5, z);
+  c.userData = { baseY: 1.5 };
+  scene.add(c);
+  crystals.push(c);
+}
+
+for (let i = 0; i < 8; i++) spawnCrystal();
 
 // ============ МИССИИ ============
 let missionMarker = null;
@@ -916,8 +983,11 @@ function startRace() {
   });
 }
 
-// ============ ПУЛИ ============
+// ============ ПУЛИ И ГРАНАТЫ ============
 const bullets = [];
+const grenades = [];
+const fires = [];
+
 function shoot(from, direction, isEnemy = false) {
   const b = new THREE.Mesh(
     new THREE.SphereGeometry(0.15, 6, 6),
@@ -935,11 +1005,140 @@ function shoot(from, direction, isEnemy = false) {
   beep(isEnemy ? 300 : 900, 0.05, 'square', 0.05);
 }
 
-// ИСПРАВЛЕНО: увеличен радиус попадания и проверка по ВСЕМ пешеходам/машинам
+function throwGrenade() {
+  if (drivingCar || flyingHeli || ridingBoat) return;
+  const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), playerGroup.rotation.y);
+  const g = new THREE.Mesh(
+    new THREE.SphereGeometry(0.3, 8, 8),
+    new THREE.MeshStandardMaterial({ color: 0x224422, metalness: 0.8 })
+  );
+  g.position.copy(playerGroup.position).add(new THREE.Vector3(0, 1.5, 0));
+  g.userData = {
+    vx: forward.x * 15,
+    vy: 8,
+    vz: forward.z * 15,
+    fuse: 2.0
+  };
+  scene.add(g);
+  grenades.push(g);
+  beep(400, 0.1, 'sine', 0.1);
+  showMessage('💣 Граната!', 600);
+}
+
+function updateGrenades(dt) {
+  for (let i = grenades.length - 1; i >= 0; i--) {
+    const g = grenades[i];
+    g.position.x += g.userData.vx * dt;
+    g.position.y += g.userData.vy * dt;
+    g.position.z += g.userData.vz * dt;
+    g.userData.vy -= 20 * dt;
+    g.rotation.x += dt * 5;
+    g.rotation.z += dt * 3;
+    if (g.position.y < 0.3) {
+      g.position.y = 0.3;
+      g.userData.vy *= -0.5;
+      g.userData.vx *= 0.7;
+      g.userData.vz *= 0.7;
+    }
+    g.userData.fuse -= dt;
+    if (g.userData.fuse <= 0) {
+      // Взрыв!
+      explode(g.position.x, g.position.y, g.position.z, 0xff4400, 40);
+      explode(g.position.x, g.position.y, g.position.z, 0xffaa00, 20);
+      beep(80, 0.4, 'sawtooth', 0.3);
+      
+      // Урон по машинам в радиусе 6
+      for (let j = cars.length - 1; j >= 0; j--) {
+        const c = cars[j];
+        if (c === drivingCar) continue;
+        if (c.position.distanceTo(g.position) < 6) {
+          explode(c.position.x, 1, c.position.z, 0xffaa00, 15);
+          scene.remove(c);
+          cars.splice(j, 1);
+          money += 50;
+          wanted = Math.min(wanted + 1, 5);
+        }
+      }
+      // Урон по пешеходам
+      pedestrians.forEach(p => {
+        if (!p.userData.alive) return;
+        if (p.position.distanceTo(g.position) < 6) {
+          p.userData.alive = false;
+          p.visible = false;
+          explode(p.position.x, 1, p.position.z, 0xcc0000, 10);
+          wanted = Math.min(wanted + 1, 5);
+        }
+      });
+      // Урон по домам
+      buildings.forEach(b => {
+        const bMesh = b.mesh;
+        const hp = buildingHealth.get(bMesh) || 3;
+        if (Math.hypot(b.x - g.position.x, b.z - g.position.z) < 8) {
+          buildingHealth.set(bMesh, hp - 1);
+          if (hp - 1 <= 0) {
+            bMesh.material.color.setHex(0x444444);
+            bMesh.scale.y *= 0.3;
+            bMesh.position.y = bMesh.scale.y * 2;
+            money += 200;
+            updateMoney();
+          } else {
+            bMesh.material.color.multiplyScalar(0.7);
+          }
+        }
+      });
+      updateMoney();
+      updateWanted();
+      updateStats();
+      
+      // Огонь на месте
+      spawnFire(g.position.x, g.position.z);
+      
+      scene.remove(g);
+      grenades.splice(i, 1);
+    }
+  }
+}
+
+function spawnFire(x, z) {
+  const fire = {
+    x, z,
+    life: 5,
+    particles: []
+  };
+  for (let i = 0; i < 15; i++) {
+    const p = new THREE.Mesh(
+      new THREE.SphereGeometry(0.3 + Math.random() * 0.3, 6, 6),
+      new THREE.MeshBasicMaterial({ color: Math.random() > 0.5 ? 0xff4400 : 0xff8800, transparent: true })
+    );
+    p.position.set(x + (Math.random() - 0.5) * 3, 0.5, z + (Math.random() - 0.5) * 3);
+    p.userData = { vy: 2 + Math.random() * 2, life: 1 };
+    scene.add(p);
+    fire.particles.push(p);
+  }
+  fires.push(fire);
+}
+
+function updateFires(dt) {
+  for (let i = fires.length - 1; i >= 0; i--) {
+    const f = fires[i];
+    f.life -= dt;
+    f.particles.forEach(p => {
+      p.position.y += p.userData.vy * dt;
+      p.userData.life -= dt * 0.5;
+      p.scale.setScalar(p.userData.life);
+      p.material.opacity = p.userData.life;
+      p.material.transparent = true;
+    });
+    if (f.life <= 0) {
+      f.particles.forEach(p => scene.remove(p));
+      fires.splice(i, 1);
+    }
+  }
+}
+
 function updateBullets(dt) {
   for (let i = bullets.length - 1; i >= 0; i--) {
     const b = bullets[i];
-    const oldPos = b.position.clone();
     b.position.x += b.userData.vx * dt;
     b.position.y += b.userData.vy * dt;
     b.position.z += b.userData.vz * dt;
@@ -947,7 +1146,6 @@ function updateBullets(dt) {
 
     let hit = false;
 
-    // Проверка попадания в машины (радиус 2.5)
     for (const car of cars) {
       if (car === drivingCar) continue;
       if (car.position.distanceTo(b.position) < 2.5) {
@@ -958,19 +1156,17 @@ function updateBullets(dt) {
         updateMoney();
         wanted = Math.min(wanted + 1, 5);
         updateWanted();
+        updateStats();
         hit = true;
         break;
       }
     }
 
-    // ИСПРАВЛЕНО: попадание в пешеходов (радиус 1.2 вместо 1, проверка по 3D)
     if (!hit) {
       for (const p of pedestrians) {
         if (!p.userData.alive) continue;
-        // Позиция центра пешехода (на высоте 1)
         const pedCenter = p.position.clone();
         pedCenter.y += 1;
-        // Проверяем расстояние от пули до центра
         if (pedCenter.distanceTo(b.position) < 1.2) {
           p.userData.alive = false;
           p.visible = false;
@@ -979,13 +1175,13 @@ function updateBullets(dt) {
           updateWanted();
           money += 10;
           updateMoney();
+          updateStats();
           hit = true;
           break;
         }
       }
     }
 
-    // ИСПРАВЛЕНО: попадание в полицию
     if (!hit) {
       for (const pc of policeCars) {
         if (pc === drivingCar) continue;
@@ -998,6 +1194,7 @@ function updateBullets(dt) {
           updateMoney();
           wanted = Math.min(wanted + 1, 5);
           updateWanted();
+          updateStats();
           hit = true;
           break;
         }
@@ -1071,11 +1268,14 @@ let money = 0;
 let wanted = 0;
 let gameOver = false;
 let bestMoney = parseInt(localStorage.getItem('bestMoney') || '0');
+let stats = { peds: 0, cars: 0, buildings: 0 };
+let achievements = {};
 
 const moneyEl = document.getElementById('money');
 const wantedEl = document.getElementById('wanted');
 const taskEl = document.getElementById('task');
 const raceHud = document.getElementById('race-hud');
+const statsHud = document.getElementById('stats-hud');
 
 function updateMoney() { moneyEl.textContent = money; }
 function updateWanted() {
@@ -1086,12 +1286,56 @@ function updateWanted() {
     wantedEl.style.display = 'none';
   }
 }
+function updateStats() {
+  statsHud.textContent = `👤${stats.peds} 🚗${stats.cars} 🏚️${stats.buildings}`;
+  checkAchievements();
+}
 function showMessage(text, ms = 1200) {
   const m = document.getElementById('message');
   m.textContent = text;
   m.style.opacity = 1;
   clearTimeout(m._t);
   m._t = setTimeout(() => m.style.opacity = 0, ms);
+}
+function showAchievement(title, desc) {
+  const el = document.getElementById('achievement');
+  el.innerHTML = `🏆 <b>${title}</b><br>${desc}`;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+  beep(1200, 0.1);
+  beep(1500, 0.1);
+  beep(1800, 0.2);
+}
+
+function checkAchievements() {
+  if (!achievements.firstKill && stats.peds >= 1) {
+    achievements.firstKill = true;
+    showAchievement('Первая кровь', 'Убил первого пешехода');
+  }
+  if (!achievements.killer && stats.peds >= 10) {
+    achievements.killer = true;
+    showAchievement('Убийца', '10 пешеходов');
+  }
+  if (!achievements.maniac && stats.peds >= 50) {
+    achievements.maniac = true;
+    showAchievement('Маньяк', '50 пешеходов');
+  }
+  if (!achievements.driver && stats.cars >= 5) {
+    achievements.driver = true;
+    showAchievement('Угонщик', '5 машин');
+  }
+  if (!achievements.demolisher && stats.buildings >= 3) {
+    achievements.demolisher = true;
+    showAchievement('Разрушитель', '3 дома');
+  }
+  if (!achievements.rich && money >= 500) {
+    achievements.rich = true;
+    showAchievement('Богач', '500 денег');
+  }
+  if (!achievements.rich2 && money >= 2000) {
+    achievements.rich2 = true;
+    showAchievement('Миллионер', '2000 денег');
+  }
 }
 
 // ============ УПРАВЛЕНИЕ ============
@@ -1144,12 +1388,14 @@ window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 // ============ ДЕЙСТВИЯ ============
 const actionBtn = document.getElementById('action-btn');
 const shootBtn = document.getElementById('shoot-btn');
+const grenadeBtn = document.getElementById('grenade-btn');
 const raceBtn = document.getElementById('race-btn');
 const heliBtn = document.getElementById('heli-btn');
 const boatBtn = document.getElementById('boat-btn');
 const heliUpBtn = document.getElementById('heli-up-btn');
 const heliDownBtn = document.getElementById('heli-down-btn');
 const crosshair = document.getElementById('crosshair');
+const repairBtn = document.getElementById('repair-btn');
 
 let nearestCar = null;
 let nearestHeli = null;
@@ -1163,12 +1409,15 @@ actionBtn.addEventListener('touchstart', e => { e.preventDefault(); doAction(); 
 actionBtn.addEventListener('click', e => { e.preventDefault(); doAction(); });
 shootBtn.addEventListener('touchstart', e => { e.preventDefault(); doShoot(); }, { passive: false });
 shootBtn.addEventListener('click', e => { e.preventDefault(); doShoot(); });
+grenadeBtn.addEventListener('touchstart', e => { e.preventDefault(); throwGrenade(); }, { passive: false });
+grenadeBtn.addEventListener('click', e => { e.preventDefault(); throwGrenade(); });
 raceBtn.addEventListener('touchstart', e => { e.preventDefault(); startRace(); }, { passive: false });
 raceBtn.addEventListener('click', e => { e.preventDefault(); startRace(); });
 heliBtn.addEventListener('touchstart', e => { e.preventDefault(); doHeli(); }, { passive: false });
 heliBtn.addEventListener('click', e => { e.preventDefault(); doHeli(); });
 boatBtn.addEventListener('touchstart', e => { e.preventDefault(); doBoat(); }, { passive: false });
 boatBtn.addEventListener('click', e => { e.preventDefault(); doBoat(); });
+repairBtn.addEventListener('click', e => { e.preventDefault(); doRepair(); });
 
 let heliUp = false, heliDown = false;
 heliUpBtn.addEventListener('touchstart', e => { e.preventDefault(); heliUp = true; }, { passive: false });
@@ -1183,6 +1432,7 @@ heliDownBtn.addEventListener('mouseup', () => heliDown = false);
 window.addEventListener('keydown', e => {
   if (e.key === 'e' || e.key === 'E') doAction();
   if (e.key === ' ' || e.key === 'f' || e.key === 'F') { e.preventDefault(); doShoot(); }
+  if (e.key === 'g' || e.key === 'G') throwGrenade();
   if (e.key === 'r' || e.key === 'R') startRace();
   if (e.key === 'h' || e.key === 'H') doHeli();
   if (e.key === 'b' || e.key === 'B') doBoat();
@@ -1212,7 +1462,8 @@ function doAction() {
 }
 
 function doShoot() {
-  if (drivingCar || flyingHeli || ridingBoat) return;
+  if (flyingHeli) return;
+  if (ridingBoat) return;
   const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), playerGroup.rotation.y);
   const from = playerGroup.position.clone().add(new THREE.Vector3(0, 1.3, 0)).add(forward.clone().multiplyScalar(0.8));
   shoot(from, forward);
@@ -1222,15 +1473,17 @@ function doShoot() {
 
 function doHeli() {
   if (flyingHeli) {
-    flyingHeli.position.y = 0.8;
-    flyingHeli.userData.grounded = true;
-    playerGroup.position.set(flyingHeli.position.x + 3, 0, flyingHeli.position.z);
-    playerGroup.visible = true;
-    flyingHeli = null;
-    showMessage('Приземлился', 800);
+    if (!flyingHeli.userData.isCrashed) {
+      flyingHeli.position.y = 0.8;
+      flyingHeli.userData.grounded = true;
+      playerGroup.position.set(flyingHeli.position.x + 3, 0, flyingHeli.position.z);
+      playerGroup.visible = true;
+      flyingHeli = null;
+      showMessage('Приземлился', 800);
+    }
     return;
   }
-  if (nearestHeli) {
+  if (nearestHeli && !nearestHeli.userData.crashed) {
     flyingHeli = nearestHeli;
     flyingHeli.position.y = 10;
     playerGroup.visible = false;
@@ -1241,11 +1494,9 @@ function doHeli() {
 
 function doBoat() {
   if (ridingBoat) {
-    // Выйти на берег
     ridingBoat = null;
     const bx = boat.position.x;
     const bz = boat.position.z;
-    // Ищем ближайший берег
     if (Math.abs(bz - RIVER_Y_START) < Math.abs(bz - RIVER_Y_END)) {
       playerGroup.position.set(bx, 0, RIVER_Y_START - 2);
     } else {
@@ -1257,7 +1508,6 @@ function doBoat() {
     return;
   }
   if (boat) {
-    // Проверка близости к лодке
     const d = Math.hypot(boat.position.x - playerGroup.position.x, boat.position.z - playerGroup.position.z);
     if (d < 10) {
       ridingBoat = boat;
@@ -1269,9 +1519,41 @@ function doBoat() {
   }
 }
 
+function doRepair() {
+  if (money < 50) {
+    showMessage('❌ Нужно 50 💰 для ремонта', 1200);
+    return;
+  }
+  // Ищем ближайший повреждённый дом
+  let nearest = null;
+  let minD = 15;
+  buildings.forEach(b => {
+    const hp = buildingHealth.get(b.mesh);
+    if (hp !== undefined && hp < 3 && hp > 0) {
+      const d = Math.hypot(b.x - playerGroup.position.x, b.z - playerGroup.position.z);
+      if (d < minD) { minD = d; nearest = b; }
+    }
+  });
+  if (nearest) {
+    buildingHealth.set(nearest.mesh, 3);
+    nearest.mesh.material.color.setHex(nearest.mesh.userData.buildingData.originalColor || 0x8899aa);
+    // Восстанавливаем цвет из палитры
+    nearest.mesh.material.color.setHex(BUILDING_COLORS[Math.floor(Math.random() * BUILDING_COLORS.length)]);
+    money -= 50;
+    updateMoney();
+    explode(nearest.x, 1, nearest.z, 0x00ff00, 15);
+    showMessage('🔧 Дом отремонтирован! -50 💰', 1200);
+    beep(1000, 0.15);
+  } else {
+    showMessage('❌ Нет повреждённых домов рядом', 1200);
+  }
+}
+
 // ============ КОЛЛИЗИИ ============
 function collideBuilding(pos, radius) {
   for (const b of buildings) {
+    const hp = buildingHealth.get(b.mesh) || 0;
+    if (hp <= 0) continue; // разрушенный дом не мешает
     const minX = b.x - b.w / 2 - radius;
     const maxX = b.x + b.w / 2 + radius;
     const minZ = b.z - b.d / 2 - radius;
@@ -1298,6 +1580,7 @@ function isInRiver(x, z) {
 
 // ============ ОБНОВЛЕНИЯ ============
 let walkCycle = 0;
+let dustTimer = 0;
 
 function updatePlayer(dt) {
   let dx = joystick.x, dz = joystick.y;
@@ -1390,17 +1673,33 @@ function updateCar(dt) {
       explode(p.position.x, 1, p.position.z, 0xcc0000, 15);
       wanted = Math.min(wanted + 1, 5);
       updateWanted();
+      stats.peds++;
+      updateStats();
       beep(200, 0.2, 'sawtooth', 0.15);
     }
   });
 
+  // Следы пыли
+  dustTimer += dt;
+  if (Math.abs(carSpeed) > 5 && dustTimer > 0.1) {
+    dustTimer = 0;
+    const dust = new THREE.Mesh(
+      new THREE.SphereGeometry(0.3, 6, 6),
+      new THREE.MeshBasicMaterial({ color: 0x888877, transparent: true, opacity: 0.6 })
+    );
+    dust.position.copy(drivingCar.position).add(new THREE.Vector3(0, 0.3, 0));
+    dust.position.x += (Math.random() - 0.5) * 1.5;
+    dust.position.z += (Math.random() - 0.5) * 1.5;
+    dust.userData = { vx: (Math.random() - 0.5) * 2, vy: Math.random() * 2, vz: (Math.random() - 0.5) * 2, life: 0.5 };
+    scene.add(dust);
+    particles.push(dust);
+  }
+
   playerGroup.position.copy(drivingCar.position);
 }
 
-// ============ ЛОДКА ============
 function updateBoat(dt) {
   if (!ridingBoat) return;
-
   let throttle = 0, steer = 0;
   if (joystick.active) { throttle = -joystick.y; steer = joystick.x; }
   if (keys['w'] || keys['arrowup']) throttle = 1;
@@ -1425,7 +1724,6 @@ function updateBoat(dt) {
   const newX = boat.position.x + forward.x * boatSpeed * dt;
   const newZ = boat.position.z + forward.z * boatSpeed * dt;
 
-  // Лодка плавает ТОЛЬКО по реке
   if (!isRiver(newX, newZ) || isOnBridge(newX, newZ)) {
     boatSpeed *= -0.3;
     showMessage('Лодка только по реке', 800);
@@ -1435,20 +1733,56 @@ function updateBoat(dt) {
     boat.position.y = 0.3 + Math.sin(performance.now() * 0.002) * 0.05;
   }
 
-  // Качка
   boat.rotation.z = Math.sin(performance.now() * 0.002) * 0.03;
-
   playerGroup.position.copy(boat.position);
   playerGroup.position.y = 0;
 }
 
-// ============ ВЕРТОЛЁТ (ИСПРАВЛЕНО: не пролетает сквозь дома) ============
+// ============ ВЕРТОЛЁТ (ИСПРАВЛЕНО: урон, взрыв, падение) ============
 function updateHeli(dt) {
   if (!flyingHeli) {
     helis.forEach(h => {
       h.userData.rotor.rotation.y += dt * 5;
       h.userData.tailRotor.rotation.z += dt * 8;
     });
+    return;
+  }
+
+  // Дым из подбитого (HP = 1 или 2)
+  const hp = heliHealth.get(flyingHeli) || 5;
+  if (hp <= 2 && !flyingHeli.userData.isCrashed) {
+    if (Math.random() < 0.5) {
+      const smoke = new THREE.Mesh(
+        new THREE.SphereGeometry(0.4, 6, 6),
+        new THREE.MeshBasicMaterial({ color: 0x333333, transparent: true, opacity: 0.6 })
+      );
+      smoke.position.copy(flyingHeli.position);
+      smoke.position.x += (Math.random() - 0.5) * 1.5;
+      smoke.position.z += (Math.random() - 0.5) * 1.5;
+      smoke.userData = { vx: 0, vy: 1 + Math.random(), vz: 0, life: 1 };
+      scene.add(smoke);
+      particles.push(smoke);
+    }
+  }
+
+  if (flyingHeli.userData.isCrashed) {
+    // Падение
+    flyingHeli.position.y -= 15 * dt;
+    flyingHeli.rotation.z += dt * 3;
+    flyingHeli.rotation.x += dt * 2;
+    if (flyingHeli.position.y <= 0.5) {
+      flyingHeli.position.y = 0.5;
+      flyingHeli.userData.isCrashed = false;
+      flyingHeli.userData.crashed = true;
+      flyingHeli.visible = false;
+      // Огонь
+      spawnFire(flyingHeli.position.x, flyingHeli.position.z);
+      // Выход игрока
+      playerGroup.position.set(flyingHeli.position.x + 3, 0, flyingHeli.position.z);
+      playerGroup.visible = true;
+      flyingHeli = null;
+      endGame('🚁 Вертолёт разбился!');
+    }
     return;
   }
 
@@ -1461,7 +1795,6 @@ function updateHeli(dt) {
   if (keys['q'] || heliUp) flyingHeli.position.y += 10 * dt;
   if (keys['e'] || heliDown) flyingHeli.position.y -= 10 * dt;
 
-  // Автоподъём при движении вперёд
   if (throttle > 0.1 && flyingHeli.position.y < 12 && !heliDown && !keys['e']) {
     flyingHeli.position.y += 4 * dt;
   }
@@ -1473,26 +1806,68 @@ function updateHeli(dt) {
   const newX = flyingHeli.position.x + forward.x * throttle * 25 * dt;
   const newZ = flyingHeli.position.z + forward.z * throttle * 25 * dt;
 
-  // ИСПРАВЛЕНО: проверяем столкновение с домами ТОЛЬКО если низко
-  // (высота вертолёта меньше высоты дома)
-  let blocked = false;
+  // === ПРОВЕРКА СТОЛКНОВЕНИЯ С ДОМАМИ ===
+  let hitBuilding = null;
   for (const b of buildings) {
+    const bHp = buildingHealth.get(b.mesh) || 0;
+    if (bHp <= 0) continue;
     if (newX > b.x - b.w / 2 - 2 && newX < b.x + b.w / 2 + 2 &&
         newZ > b.z - b.d / 2 - 2 && newZ < b.z + b.d / 2 + 2) {
       if (flyingHeli.position.y < b.h + 1) {
-        blocked = true;
+        hitBuilding = b;
         break;
       }
     }
   }
 
-  if (!blocked) {
-    flyingHeli.position.x = newX;
-    flyingHeli.position.z = newZ;
-  } else {
-    if (flyingHeli.position.y < 12) {
+  if (hitBuilding) {
+    const impactSpeed = Math.abs(throttle) * 25;
+    if (impactSpeed > 5) {
+      // Взрыв
+      explode(flyingHeli.position.x, flyingHeli.position.y, flyingHeli.position.z, 0xff4400, 30);
+      explode(flyingHeli.position.x, flyingHeli.position.y, flyingHeli.position.z, 0xffaa00, 20);
+      beep(100, 0.3, 'sawtooth', 0.3);
+
+      const curHp = heliHealth.get(flyingHeli) || 5;
+      heliHealth.set(flyingHeli, curHp - 1);
+
+      const bHp = (buildingHealth.get(hitBuilding.mesh) || 3) - 1;
+      buildingHealth.set(hitBuilding.mesh, bHp);
+
+      if (bHp === 2) {
+        hitBuilding.mesh.material.color.multiplyScalar(0.7);
+        showMessage('💥 Дом повреждён!', 1000);
+      } else if (bHp === 1) {
+        hitBuilding.mesh.material.color.multiplyScalar(0.6);
+        hitBuilding.mesh.rotation.z += 0.05;
+        showMessage('💥 Дом сильно повреждён!', 1000);
+      } else if (bHp <= 0) {
+        hitBuilding.mesh.material.color.setHex(0x444444);
+        hitBuilding.mesh.scale.y *= 0.3;
+        hitBuilding.mesh.position.y = hitBuilding.mesh.scale.y * 2;
+        money += 200;
+        stats.buildings++;
+        updateMoney();
+        updateStats();
+        showMessage('🏚️ Дом разрушен! +200 💰', 1500);
+      }
+
+      if (curHp - 1 <= 0) {
+        explode(flyingHeli.position.x, flyingHeli.position.y, flyingHeli.position.z, 0xff0000, 40);
+        beep(80, 0.5, 'sawtooth', 0.4);
+        flyingHeli.userData.isCrashed = true;
+        showMessage('💥 Вертолёт сбит!', 1500);
+      } else {
+        showMessage(`💥 Удар! Вертолёт: ${curHp - 1}/5`, 1200);
+        flyingHeli.position.x -= forward.x * 2;
+        flyingHeli.position.z -= forward.z * 2;
+      }
+    } else {
       showMessage('⬆️ Поднимись выше домов!', 800);
     }
+  } else {
+    flyingHeli.position.x = newX;
+    flyingHeli.position.z = newZ;
   }
 
   flyingHeli.position.x = Math.max(-CITY_SIZE / 2, Math.min(CITY_SIZE / 2, flyingHeli.position.x));
@@ -1508,7 +1883,7 @@ function updateHeli(dt) {
   playerGroup.position.y -= 3;
 }
 
-// ============ ПОЛИЦИЯ (ИСПРАВЛЕНО: обход домов + арест только если ВИДНА) ============
+// ============ ПОЛИЦИЯ ============
 function updatePolice(dt) {
   if (wanted === 0) return;
   const target = drivingCar ? drivingCar.position : (flyingHeli ? flyingHeli.position : (ridingBoat ? boat.position : playerGroup.position));
@@ -1520,7 +1895,6 @@ function updatePolice(dt) {
     const dist = dir.length();
 
     if (dist > 60) {
-      // Патрулирование
       pc.rotation.y += 0.3 * dt;
       const nx = pc.position.x + Math.sin(pc.rotation.y) * 2 * dt;
       const nz = pc.position.z + Math.cos(pc.rotation.y) * 2 * dt;
@@ -1531,7 +1905,6 @@ function updatePolice(dt) {
         pc.rotation.y += 1.5 * dt;
       }
     } else if (dist > 1) {
-      // Погоня — обход домов
       dir.normalize();
       const targetAngle = Math.atan2(dir.x, dir.z);
       let diff = targetAngle - pc.rotation.y;
@@ -1568,12 +1941,10 @@ function updatePolice(dt) {
     pc.position.x = Math.max(-CITY_SIZE / 2, Math.min(CITY_SIZE / 2, pc.position.x));
     pc.position.z = Math.max(-CITY_SIZE / 2, Math.min(CITY_SIZE / 2, pc.position.z));
 
-    // Мигалка
     if (pc.userData.sirenR) {
       const t = performance.now() * 0.005;
       pc.userData.sirenR.material.color.setHex(Math.sin(t) > 0 ? 0xff0000 : 0x440000);
       pc.userData.sirenB.material.color.setHex(Math.sin(t) > 0 ? 0x000044 : 0x0000ff);
-
       if (pc.userData.beacon) {
         const pulse = 0.6 + Math.sin(performance.now() * 0.008) * 0.4;
         pc.userData.beacon.scale.setScalar(pulse);
@@ -1584,7 +1955,6 @@ function updatePolice(dt) {
       }
     }
 
-    // АРЕСТ: только если полиция РЯДОМ и ВИДНА
     if (pc.position.distanceTo(target) < 4 && wanted >= 1 && !flyingHeli) {
       if (isPoliceVisible(pc.position)) {
         endGame('Тебя поймала полиция!');
@@ -1596,8 +1966,9 @@ function updatePolice(dt) {
 function isPoliceVisible(policePos) {
   if (playerGroup.position.distanceTo(policePos) > 20) return false;
   if (camera.position.distanceTo(policePos) > 25) return false;
-  // Проверка — есть ли дом между игроком и полицией
   for (const b of buildings) {
+    const hp = buildingHealth.get(b.mesh) || 0;
+    if (hp <= 0) continue;
     const distToBuilding = Math.hypot(policePos.x - b.x, policePos.z - b.z);
     if (distToBuilding < Math.max(b.w, b.d) / 2 + 2) {
       if (playerGroup.position.distanceTo(policePos) > 12) return false;
@@ -1646,6 +2017,26 @@ function updatePedestrians(dt) {
     p.userData.leg1.rotation.x = Math.sin(p.userData.walkCycle) * 0.5;
     p.userData.leg2.rotation.x = -Math.sin(p.userData.walkCycle) * 0.5;
   });
+}
+
+function updateCrystals(dt) {
+  for (let i = crystals.length - 1; i >= 0; i--) {
+    const c = crystals[i];
+    c.rotation.y += dt * 2;
+    c.position.y = c.userData.baseY + Math.sin(performance.now() * 0.002) * 0.3;
+    
+    const target = drivingCar ? drivingCar.position : (flyingHeli ? flyingHeli.position : (ridingBoat ? boat.position : playerGroup.position));
+    if (target.distanceTo(c.position) < 2.5) {
+      money += 50;
+      updateMoney();
+      explode(c.position.x, c.position.y, c.position.z, 0x00ffff, 20);
+      beep(1500, 0.1);
+      showMessage('💎 +50!', 800);
+      scene.remove(c);
+      crystals.splice(i, 1);
+      spawnCrystal();
+    }
+  }
 }
 
 function updateMission(dt) {
@@ -1784,8 +2175,9 @@ function drawMinimap() {
   mctx.fillRect(cx - bridgeWidth / 2 * scale + (0 - target.x) * scale, riverY - riverH / 2, bridgeWidth * scale, riverH);
 
   // Дома
-  mctx.fillStyle = 'rgba(150,150,170,0.6)';
   buildings.forEach(b => {
+    const hp = buildingHealth.get(b.mesh) || 0;
+    mctx.fillStyle = hp > 0 ? 'rgba(150,150,170,0.6)' : 'rgba(80,80,80,0.6)';
     const dx = (b.x - target.x) * scale;
     const dz = (b.z - target.z) * scale;
     if (Math.abs(dx) < MM_SIZE / 2 && Math.abs(dz) < MM_SIZE / 2) {
@@ -1793,7 +2185,7 @@ function drawMinimap() {
     }
   });
 
-  // Полиция — крупнее + пульсация
+  // Полиция
   policeCars.forEach(pc => {
     if (pc === drivingCar) return;
     const dx = (pc.position.x - target.x) * scale;
@@ -1822,9 +2214,22 @@ function drawMinimap() {
     }
   }
 
+  // Кристаллы
+  mctx.fillStyle = '#00ffff';
+  crystals.forEach(c => {
+    const dx = (c.position.x - target.x) * scale;
+    const dz = (c.position.z - target.z) * scale;
+    if (Math.abs(dx) < MM_SIZE / 2 && Math.abs(dz) < MM_SIZE / 2) {
+      mctx.beginPath();
+      mctx.arc(cx + dx, cy + dz, 3, 0, Math.PI * 2);
+      mctx.fill();
+    }
+  });
+
   // Вертолёты
   mctx.fillStyle = '#b464ff';
   helis.forEach(h => {
+    if (h.userData.crashed) return;
     const dx = (h.position.x - target.x) * scale;
     const dz = (h.position.z - target.z) * scale;
     if (Math.abs(dx) < MM_SIZE / 2 && Math.abs(dz) < MM_SIZE / 2) {
@@ -1885,6 +2290,7 @@ function endGame(reason = 'Тебя поймала полиция!') {
   document.getElementById('go-subtitle').textContent = reason;
   document.getElementById('final-money').textContent = money;
   document.getElementById('best-money').textContent = bestMoney;
+  document.getElementById('stats-final').textContent = `👤${stats.peds} 🚗${stats.cars} 🏚️${stats.buildings}`;
   document.getElementById('gameover-modal').style.display = 'flex';
   beep(300, 0.5, 'sawtooth', 0.2);
 }
@@ -1899,8 +2305,11 @@ window.resetGame = function() {
   flyingHeli = null;
   ridingBoat = null;
   raceActive = false;
+  stats = { peds: 0, cars: 0, buildings: 0 };
+  achievements = {};
   updateMoney();
   updateWanted();
+  updateStats();
   playerGroup.position.set(20, 0, 20);
   playerGroup.visible = true;
   playerGroup.rotation.set(0, 0, 0);
@@ -1927,6 +2336,21 @@ window.resetGame = function() {
     pc.position.set(px, 0, pz);
   });
 
+  helis.forEach(h => {
+    h.visible = true;
+    h.userData.crashed = false;
+    h.userData.isCrashed = false;
+    heliHealth.set(h, 5);
+  });
+
+  buildings.forEach(b => {
+    buildingHealth.set(b.mesh, 3);
+    b.mesh.material.color.setHex(BUILDING_COLORS[Math.floor(Math.random() * BUILDING_COLORS.length)]);
+    b.mesh.scale.set(1, 1, 1);
+    b.mesh.position.y = b.h / 2;
+    b.mesh.rotation.z = 0;
+  });
+
   checkpoints.forEach(c => {
     if (c.userData.ring) scene.remove(c.userData.ring);
     scene.remove(c);
@@ -1936,6 +2360,8 @@ window.resetGame = function() {
 
   bullets.forEach(b => scene.remove(b));
   bullets.length = 0;
+  grenades.forEach(g => scene.remove(g));
+  grenades.length = 0;
 
   spawnMissionMarker();
   document.getElementById('gameover-modal').style.display = 'none';
@@ -1963,9 +2389,12 @@ function animate() {
   updateHeli(dt);
   updatePolice(dt);
   updatePedestrians(dt);
+  updateCrystals(dt);
   updateMission(dt);
   updateRace(dt);
   updateBullets(dt);
+  updateGrenades(dt);
+  updateFires(dt);
   updateParticles(dt);
   updateCamera(dt);
 
@@ -1984,16 +2413,30 @@ function animate() {
 
   if (!drivingCar && !flyingHeli && !ridingBoat) {
     shootBtn.style.display = 'flex';
+    grenadeBtn.style.display = 'flex';
     crosshair.style.display = 'block';
   } else {
     shootBtn.style.display = 'none';
+    grenadeBtn.style.display = 'none';
     crosshair.style.display = 'none';
   }
+
+  // Кнопка ремонта
+  let hasDamaged = false;
+  buildings.forEach(b => {
+    const hp = buildingHealth.get(b.mesh);
+    if (hp !== undefined && hp < 3 && hp > 0) {
+      if (Math.hypot(b.x - playerGroup.position.x, b.z - playerGroup.position.z) < 15) {
+        hasDamaged = true;
+      }
+    }
+  });
+  repairBtn.style.display = hasDamaged ? 'flex' : 'none';
 
   // Вертолёт
   if (flyingHeli) {
     heliBtn.style.display = 'flex';
-    heliBtn.innerHTML = '⬇️<br>ПРИЗЕМЛИТЬ';
+    heliBtn.innerHTML = '⬇️<br>ПРИЗЕМ';
     heliBtn.style.background = 'rgba(100,100,100,0.9)';
     heliUpBtn.style.display = 'flex';
     heliDownBtn.style.display = 'flex';
@@ -2005,6 +2448,7 @@ function animate() {
     nearestHeli = null;
     let minD = 10;
     helis.forEach(h => {
+      if (h.userData.crashed) return;
       const dx = h.position.x - playerGroup.position.x;
       const dz = h.position.z - playerGroup.position.z;
       const d = Math.hypot(dx, dz);
