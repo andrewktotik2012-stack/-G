@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-<title>Mini-GTA v6.2 FIX</title>
+<title>Mini-GTA v6.3 RESTORED</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: -apple-system, Arial, sans-serif; touch-action: none; user-select: none; -webkit-user-select: none; }
@@ -16,26 +16,20 @@
   #hud .stats { background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 400; margin-top: 3px; }
 
   .action-btn { position: absolute; width: 70px; height: 70px; border-radius: 50%; display: none; align-items: center; justify-content: center; text-align: center; font-weight: 800; font-size: 10px; z-index: 20; border: 3px solid #fff; letter-spacing: 0.3px; color: #000; }
-  #action-btn { bottom: 25px; right: 18px; background: rgba(255, 220, 0, 0.9); box-shadow: 0 0 20px rgba(255, 220, 0, 0.7); }
-  #shoot-btn { bottom: 25px; right: 95px; background: rgba(255, 80, 80, 0.9); box-shadow: 0 0 20px rgba(255, 80, 80, 0.7); color: #fff; }
-  #weapon-btn { bottom: 25px; right: 172px; background: rgba(80, 200, 80, 0.9); box-shadow: 0 0 20px rgba(80, 200, 80, 0.7); color: #fff; }
-  #heli-btn { bottom: 100px; right: 18px; background: rgba(180, 100, 255, 0.9); box-shadow: 0 0 20px rgba(180, 100, 255, 0.7); color: #fff; }
-  #boat-btn { bottom: 100px; right: 95px; background: rgba(0, 150, 200, 0.9); box-shadow: 0 0 20px rgba(0, 150, 200, 0.7); color: #fff; }
-  #mission-btn { bottom: 100px; right: 172px; background: rgba(255, 220, 0, 0.9); box-shadow: 0 0 20px rgba(255, 220, 0, 0.7); }
+  #action-btn { bottom: 25px; right: 18px; background: rgba(255, 220, 0, 0.9); }
+  #shoot-btn { bottom: 25px; right: 95px; background: rgba(255, 80, 80, 0.9); color: #fff; }
+  #weapon-btn { bottom: 25px; right: 172px; background: rgba(80, 200, 80, 0.9); color: #fff; }
+  #heli-btn { bottom: 100px; right: 18px; background: rgba(180, 100, 255, 0.9); color: #fff; }
+  #boat-btn { bottom: 100px; right: 95px; background: rgba(0, 150, 200, 0.9); color: #fff; }
+  #mission-btn { bottom: 100px; right: 172px; background: rgba(255, 220, 0, 0.9); }
 
   #buy-btn { bottom: 175px; right: 18px; background: rgba(255,150,50,0.95); display: none; }
   
-  #exit-shop-btn { 
-    position: absolute; top: 15%; left: 50%; transform: translateX(-50%); 
-    background: rgba(200, 30, 30, 0.95); color: #fff; padding: 12px 30px; 
-    border-radius: 12px; font-size: 16px; font-weight: bold; 
-    display: none; z-index: 9999; border: 2px solid #fff; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5); cursor: pointer; text-align: center;
-  }
+  #exit-shop-btn { position: absolute; top: 15%; left: 50%; transform: translateX(-50%); background: rgba(200, 30, 30, 0.95); color: #fff; padding: 12px 30px; border-radius: 12px; font-size: 16px; font-weight: bold; display: none; z-index: 9999; border: 2px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.5); cursor: pointer; text-align: center; }
 
   #joystick-zone { position: absolute; bottom: 0; left: 0; width: 50%; height: 50%; z-index: 15; }
   #joystick-base { position: absolute; width: 120px; height: 120px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.1); display: none; pointer-events: none; }
-  #joystick-knob { position: absolute; width: 55px; height: 55px; border-radius: 50%; background: rgba(255,255,255,0.75); box-shadow: 0 0 15px rgba(255,255,255,0.7); display: none; pointer-events: none; }
+  #joystick-knob { position: absolute; width: 55px; height: 55px; border-radius: 50%; background: rgba(255,255,255,0.75); display: none; pointer-events: none; }
 
   #loading { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #4dff88; font-size: 20px; background: #000; z-index: 100; }
   #loading .spinner { width: 60px; height: 60px; border: 4px solid rgba(77,255,136,0.3); border-top-color: #4dff88; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
@@ -45,18 +39,21 @@
 
   #shop-hint { position: absolute; top: 30%; left: 50%; transform: translateX(-50%); color: #fff; font-size: 18px; font-weight: bold; text-shadow: 0 0 10px #000; display: none; z-index: 30; pointer-events: none; text-align: center; background: rgba(0,0,0,0.6); padding: 10px 20px; border-radius: 10px; border: 2px solid #ffaa00; }
 
-  #minimap { position: absolute; top: 60px; right: 10px; width: 100px; height: 100px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.6); background: rgba(0,0,0,0.5); z-index: 12; box-shadow: 0 0 15px rgba(0,0,0,0.6); }
+  #minimap { position: absolute; top: 60px; right: 10px; width: 100px; height: 100px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.6); background: rgba(0,0,0,0.5); z-index: 12; }
 
   #top-btns { position: absolute; top: 60px; left: 10px; display: flex; flex-direction: column; gap: 6px; z-index: 20; }
   .top-btn { width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.5); color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
   #fps-counter { position: absolute; top: 5px; right: 5px; color: #0f0; font-size: 11px; font-family: monospace; z-index: 999; background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; }
   #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 36px; height: 36px; border: 2px solid rgba(255,80,80,0.8); border-radius: 50%; display: none; z-index: 11; pointer-events: none; }
+  #crosshair::before, #crosshair::after { content: ''; position: absolute; background: rgba(255,80,80,0.8); }
+  #crosshair::before { top: 50%; left: -8px; right: -8px; height: 2px; transform: translateY(-50%); }
+  #crosshair::after { left: 50%; top: -8px; bottom: -8px; width: 2px; transform: translateX(-50%); }
 </style>
 </head>
 <body>
 
-<div id="loading"><div class="spinner"></div>Загружаем v6.2...</div>
+<div id="loading"><div class="spinner"></div>Загружаем v6.3...</div>
 
 <div id="hud" style="display:none">
   <div>💰 <span class="money" id="money">0</span><br>⭐ <span class="wanted" id="wanted" style="display:none">0</span><div class="stats" id="stats-hud">👤0 🚗0 🏚️0</div></div>
@@ -64,17 +61,12 @@
 </div>
 
 <canvas id="minimap" width="200" height="200"></canvas>
-<div id="top-btns">
-  <div class="top-btn" id="reset-btn" style="display:none">↻</div>
-</div>
+<div id="top-btns"><div class="top-btn" id="reset-btn" style="display:none">↻</div></div>
 <div id="crosshair"></div>
 <div id="shop-hint"></div>
 <div id="fps-counter">FPS: --</div>
 
-<div id="joystick-zone" style="display:none">
-  <div id="joystick-base"></div>
-  <div id="joystick-knob"></div>
-</div>
+<div id="joystick-zone" style="display:none"><div id="joystick-base"></div><div id="joystick-knob"></div></div>
 
 <div id="action-btn" class="action-btn">СЕСТЬ</div>
 <div id="shoot-btn" class="action-btn">🔫</div>
@@ -97,73 +89,69 @@ import * as THREE from 'three';
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87CEEB);
 const camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 500);
-const renderer = new THREE.WebGLRenderer({ antialias: false });
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(1);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.BasicShadowMap;
 document.body.appendChild(renderer.domElement);
 
-const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+const ambient = new THREE.AmbientLight(0xffffff, 0.6);
 scene.add(ambient);
-const sun = new THREE.DirectionalLight(0xfff4e6, 1.3);
+const sun = new THREE.DirectionalLight(0xfff4e6, 1.4);
 sun.position.set(50, 80, 30);
 sun.castShadow = true;
-sun.shadow.mapSize.set(1024, 1024);
 scene.add(sun);
 
 const CITY_SIZE = 200;
-const RIVER_Y_START = -10;
-const RIVER_Y_END = 10;
-const BLOCK = 30;
 
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshStandardMaterial({ color: 0x3a5a3a }));
-ground.rotation.x = -Math.PI / 2;
-ground.receiveShadow = true;
-scene.add(ground);
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
 
-const water = new THREE.Mesh(new THREE.PlaneGeometry(400, 20), new THREE.MeshStandardMaterial({ color: 0x2a6aae, metalness: 0.5, roughness: 0.3, transparent: true, opacity: 0.85 }));
-water.rotation.x = -Math.PI / 2;
-water.position.set(0, 0.05, 0);
-scene.add(water);
+const water = new THREE.Mesh(new THREE.PlaneGeometry(400, 20), new THREE.MeshStandardMaterial({ color: 0x2a6aae, metalness: 0.7, roughness: 0.2, transparent: true, opacity: 0.85 }));
+water.rotation.x = -Math.PI / 2; water.position.set(0, 0.05, 0); scene.add(water);
 
+// ГОРОД С ОКНАМИ
 const buildings = [];
 const buildingHealth = new Map();
 const BUILDING_COLORS = [0x8899aa, 0xaa9988, 0x778899, 0x998877, 0xaaaabb, 0x9a8a7a, 0x8a9a8a];
+const windowMat = new THREE.MeshBasicMaterial({ color: 0xffee88 });
 
 function makeBuilding(x, z, w, d, h) {
   const color = BUILDING_COLORS[Math.floor(Math.random() * BUILDING_COLORS.length)];
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color, roughness: 0.85, metalness: 0.1 }));
-  mesh.position.set(x, h / 2, z); mesh.receiveShadow = true; scene.add(mesh);
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color, roughness: 0.85 }));
+  mesh.position.set(x, h / 2, z); mesh.castShadow = true; mesh.receiveShadow = true; scene.add(mesh);
+  
+  // ОКНА
+  const rows = Math.floor(h / 2.5);
+  const cols = Math.floor(w / 2);
+  for (let r = 1; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (Math.random() > 0.5) {
+        const win = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1), windowMat);
+        win.position.set(x - w/2 + 1.2 + c*2, r*2.5, z + d/2 + 0.05);
+        scene.add(win);
+      }
+    }
+  }
+
   const data = { x, z, w, d, h, mesh };
   buildings.push(data); buildingHealth.set(mesh, 3); mesh.userData.buildingData = data;
 }
 
-function isRiver(x, z) { return z > RIVER_Y_START - 2 && z < RIVER_Y_END + 2; }
-
-for (let bx = -CITY_SIZE / 2; bx < CITY_SIZE / 2; bx += BLOCK) {
-  for (let bz = -CITY_SIZE / 2; bz < CITY_SIZE / 2; bz += BLOCK) {
-    const qcx = bx + BLOCK / 2; const qcz = bz + BLOCK / 2;
-    if (isRiver(qcx, qcz)) continue;
-    if (Math.hypot(qcx - 80, qcz - 40) < 20) continue;
-
-    const roadMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
-    const roadH = new THREE.Mesh(new THREE.PlaneGeometry(BLOCK, 10), roadMat);
-    roadH.rotation.x = -Math.PI / 2; roadH.position.set(bx + BLOCK / 2, 0.01, bz); scene.add(roadH);
-    const roadV = new THREE.Mesh(new THREE.PlaneGeometry(BLOCK, 10), roadMat);
-    roadV.rotation.x = -Math.PI / 2; roadV.rotation.z = Math.PI / 2; roadV.position.set(bx, 0.01, bz + BLOCK / 2); scene.add(roadV);
-
-    if (Math.random() < 0.6) {
-      const w = 6 + Math.random() * 6; const d = 6 + Math.random() * 6; const h = 8 + Math.random() * 15;
-      makeBuilding(qcx + (Math.random()-0.5)*10, qcz + (Math.random()-0.5)*10, w, d, h);
+for (let bx = -CITY_SIZE/2; bx < CITY_SIZE/2; bx += 30) {
+  for (let bz = -CITY_SIZE/2; bz < CITY_SIZE/2; bz += 30) {
+    if (Math.abs(bz) < 15) continue;
+    if (Math.hypot(bx - 80, bz - 40) < 20) continue; // Место под магазин
+    if (Math.random() < 0.7) {
+      makeBuilding(bx + Math.random()*10, bz + Math.random()*10, 6 + Math.random()*6, 6 + Math.random()*6, 8 + Math.random()*18);
     }
   }
 }
 
 // МАГАЗИН
 const shopBuilding = { x: 80, z: 40, w: 12, d: 12, h: 8 };
-const shopMesh = new THREE.Mesh(new THREE.BoxGeometry(12, 8, 12), new THREE.MeshStandardMaterial({ color: 0xffcc44, roughness: 0.8 }));
-shopMesh.position.set(80, 4, 40); scene.add(shopMesh);
+const shopMesh = new THREE.Mesh(new THREE.BoxGeometry(12, 8, 12), new THREE.MeshStandardMaterial({ color: 0xffcc44 }));
+shopMesh.position.set(80, 4, 40); shopMesh.castShadow = true; scene.add(shopMesh);
 buildings.push(shopBuilding); buildingHealth.set(shopMesh, 999);
 shopMesh.userData.isShop = true; shopMesh.userData.buildingData = shopBuilding;
 const shopMarker = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 0.1, 12), new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.6 }));
@@ -174,10 +162,10 @@ const shopInterior = new THREE.Group(); shopInterior.visible = false;
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(18, 18), new THREE.MeshStandardMaterial({ color: 0x8B7355 }));
 floor.rotation.x = -Math.PI / 2; floor.position.y = 0.05; shopInterior.add(floor);
 const wallMat = new THREE.MeshStandardMaterial({ color: 0xddddaa, side: THREE.DoubleSide });
-const wallBack = new THREE.Mesh(new THREE.PlaneGeometry(18, 6), wallMat); wallBack.position.set(0, 3, -9); shopInterior.add(wallBack);
-const wallLeft = new THREE.Mesh(new THREE.PlaneGeometry(18, 6), wallMat); wallLeft.rotation.y = Math.PI / 2; wallLeft.position.set(-9, 3, 0); shopInterior.add(wallLeft);
-const wallRight = new THREE.Mesh(new THREE.PlaneGeometry(18, 6), wallMat); wallRight.rotation.y = -Math.PI / 2; wallRight.position.set(9, 3, 0); shopInterior.add(wallRight);
-const shopLight = new THREE.PointLight(0xffffaa, 3, 25); shopLight.position.set(0, 5, 0); shopInterior.add(shopLight);
+const wb = new THREE.Mesh(new THREE.PlaneGeometry(18, 6), wallMat); wb.position.set(0, 3, -9); shopInterior.add(wb);
+const wl = new THREE.Mesh(new THREE.PlaneGeometry(18, 6), wallMat); wl.rotation.y = Math.PI/2; wl.position.set(-9, 3, 0); shopInterior.add(wl);
+const wr = new THREE.Mesh(new THREE.PlaneGeometry(18, 6), wallMat); wr.rotation.y = -Math.PI/2; wr.position.set(9, 3, 0); shopInterior.add(wr);
+const sl = new THREE.PointLight(0xffffaa, 3, 25); sl.position.set(0, 5, 0); shopInterior.add(sl);
 const counter = new THREE.Mesh(new THREE.BoxGeometry(7, 1.2, 2), new THREE.MeshStandardMaterial({ color: 0x8B4513 }));
 counter.position.set(0, 0.6, 0); shopInterior.add(counter);
 
@@ -200,28 +188,45 @@ bridge.position.set(0, 0.5, 0); scene.add(bridge);
 // ИГРОК
 const playerGroup = new THREE.Group();
 const torso = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.2, 0.4), new THREE.MeshStandardMaterial({ color: 0x2255cc }));
-torso.position.y = 1.1; playerGroup.add(torso);
-const head = new THREE.Mesh(new THREE.SphereGeometry(0.32, 12, 12), new THREE.MeshStandardMaterial({ color: 0xffcc99 }));
-head.position.y = 2; playerGroup.add(head);
-const gun = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.8), new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.9 }));
+torso.position.y = 1.1; torso.castShadow = true; playerGroup.add(torso);
+const head = new THREE.Mesh(new THREE.SphereGeometry(0.32, 16, 16), new THREE.MeshStandardMaterial({ color: 0xffcc99 }));
+head.position.y = 2; head.castShadow = true; playerGroup.add(head);
+const gun = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.8), new THREE.MeshStandardMaterial({ color: 0x333333 }));
 gun.position.set(0.5, 1.3, 0.3); playerGroup.add(gun);
 const legs = [];
 for (let i = 0; i < 2; i++) {
   const leg = new THREE.Mesh(new THREE.BoxGeometry(0.28, 1, 0.3), new THREE.MeshStandardMaterial({ color: 0x333344 }));
-  leg.position.set(i === 0 ? -0.18 : 0.18, 0.5, 0); playerGroup.add(leg); legs.push(leg);
+  leg.position.set(i === 0 ? -0.18 : 0.18, 0.5, 0); leg.castShadow = true; playerGroup.add(leg); legs.push(leg);
+}
+const arms = [];
+for (let i = 0; i < 2; i++) {
+  const arm = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.9, 0.28), new THREE.MeshStandardMaterial({ color: 0x2255cc }));
+  arm.position.set(i === 0 ? -0.5 : 0.5, 1.3, 0); arm.castShadow = true; playerGroup.add(arm); arms.push(arm);
 }
 playerGroup.position.set(20, 0, 20); scene.add(playerGroup);
 
-// МАШИНЫ
+// МАШИНЫ С КОЛЁСАМИ
 const cars = [];
 function makeCar(x, z, color, isCop = false) {
   const g = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.BoxGeometry(2, 0.7, 4), new THREE.MeshStandardMaterial({ color }));
-  body.position.y = 0.7; g.add(body);
-  const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.6, 2), new THREE.MeshStandardMaterial({ color: 0x88ccff }));
-  cabin.position.set(0, 1.3, -0.3); g.add(cabin);
+  const body = new THREE.Mesh(new THREE.BoxGeometry(2, 0.7, 4), new THREE.MeshStandardMaterial({ color, metalness: 0.6, roughness: 0.3 }));
+  body.position.y = 0.7; body.castShadow = true; g.add(body);
+  const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.6, 2), new THREE.MeshStandardMaterial({ color: 0x88ccff, metalness: 0.9 }));
+  cabin.position.set(0, 1.3, -0.3); cabin.castShadow = true; g.add(cabin);
+  const wGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.25, 12); wGeo.rotateZ(Math.PI/2);
+  const wMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+  [[-1, 0.35, 1.2], [1, 0.35, 1.2], [-1, 0.35, -1.2], [1, 0.35, -1.2]].forEach(([px, py, pz]) => {
+    const w = new THREE.Mesh(wGeo, wMat); w.position.set(px, py, pz); w.castShadow = true; g.add(w);
+  });
+  if (isCop) {
+    const sR = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
+    sR.position.set(-0.4, 1.7, 0); g.add(sR);
+    const sB = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshBasicMaterial({ color: 0x0000ff }));
+    sB.position.set(0.4, 1.7, 0); g.add(sB);
+    g.userData.sirenR = sR; g.userData.sirenB = sB;
+  }
   g.position.set(x, 0, z); g.rotation.y = Math.random() * Math.PI * 2;
-  g.userData = { isCop };
+  g.userData.isCop = isCop;
   scene.add(g); cars.push(g); return g;
 }
 for (let i = 0; i < 15; i++) makeCar((Math.random()-0.5)*150, (Math.random()-0.5)*150, `hsl(${Math.random()*360}, 70%, 50%)`);
@@ -232,32 +237,41 @@ for (let i = 0; i < 4; i++) cops.push(makeCar((Math.random()-0.5)*150, (Math.ran
 const helis = [];
 function makeHeli(x, z) {
   const g = new THREE.Group();
-  const b = new THREE.Mesh(new THREE.SphereGeometry(1.2, 8, 8), new THREE.MeshStandardMaterial({ color: 0x333333 }));
-  g.add(b);
-  g.position.set(x, 8, z); scene.add(g); helis.push(g); return g;
+  const b = new THREE.Mesh(new THREE.SphereGeometry(1.2, 12, 10), new THREE.MeshStandardMaterial({ color: 0x333333 }));
+  b.scale.set(1.5, 1, 1.8); b.castShadow = true; g.add(b);
+  const rot = new THREE.Mesh(new THREE.BoxGeometry(6, 0.1, 0.3), new THREE.MeshStandardMaterial({ color: 0x888888 }));
+  rot.position.y = 1.5; g.add(rot);
+  g.position.set(x, 8, z); g.userData = { rot };
+  scene.add(g); helis.push(g); return g;
 }
 makeHeli(30, 30); makeHeli(-30, 30);
 
+// ЛОДКА
 const boat = new THREE.Group();
 const bMesh = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.6, 5), new THREE.MeshStandardMaterial({ color: 0x8B4513 }));
-bMesh.position.y = 0.3; boat.add(bMesh);
+bMesh.position.y = 0.3; bMesh.castShadow = true; boat.add(bMesh);
 boat.position.set(-30, 0.3, 0); scene.add(boat);
 
-// ПЕШЕХОДЫ
+// ПЕШЕХОДЫ (НОРМАЛЬНЫЕ)
 const pedestrians = [];
 function makePed(x, z) {
   const g = new THREE.Group();
   const body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1, 0.35), new THREE.MeshStandardMaterial({ color: `hsl(${Math.random()*360}, 50%, 50%)` }));
-  body.position.y = 1; g.add(body);
+  body.position.y = 1; body.castShadow = true; g.add(body);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.27, 8, 8), new THREE.MeshStandardMaterial({ color: 0xffcc99 }));
+  head.position.y = 1.75; head.castShadow = true; g.add(head);
+  const l1 = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.8, 0.25), new THREE.MeshStandardMaterial({ color: 0x333344 }));
+  l1.position.set(-0.15, 0.4, 0); g.add(l1);
+  const l2 = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.8, 0.25), new THREE.MeshStandardMaterial({ color: 0x333344 }));
+  l2.position.set(0.15, 0.4, 0); g.add(l2);
   g.position.set(x, 0, z);
-  g.userData = { angle: Math.random() * Math.PI * 2, speed: 1.5 };
+  g.userData = { angle: Math.random() * Math.PI * 2, speed: 1.5, l1, l2, cycle: Math.random() * 10 };
   scene.add(g); pedestrians.push(g); return g;
 }
 for (let i = 0; i < 30; i++) makePed((Math.random()-0.5)*150, (Math.random()-0.5)*150);
 
-// ОРУЖИЕ И СНАРЯДЫ
+// ОРУЖИЕ
 const bullets = [], grenades = [], rockets = [], particles = [];
-
 let currentWeapon = 'pistol';
 const weapons = {
   pistol: { name: 'Пистолет', ammo: -1, cooldown: 0.2, timer: 0 },
@@ -279,6 +293,7 @@ const taskEl = document.getElementById('task');
 const shopHint = document.getElementById('shop-hint');
 const buyBtn = document.getElementById('buy-btn');
 const exitShopBtn = document.getElementById('exit-shop-btn');
+const crosshair = document.getElementById('crosshair');
 
 function updateMoney() { moneyEl.textContent = money; localStorage.setItem('gta_money', money); }
 function showMsg(text) { const m = document.getElementById('message'); m.textContent = text; m.style.opacity = 1; clearTimeout(m._t); m._t = setTimeout(() => m.style.opacity = 0, 1500); }
@@ -325,7 +340,7 @@ bind(document.getElementById('boat-btn'), () => {
   if (ridingBoat) { ridingBoat = null; playerGroup.position.set(boat.position.x, 0, -15); playerGroup.visible = true; }
   else { ridingBoat = boat; playerGroup.visible = false; showMsg('Сел в лодку'); }
 });
-bind(document.getElementById('mission-btn'), () => showMsg('Миссии пока в разработке'));
+bind(document.getElementById('mission-btn'), () => showMsg('Миссии в разработке'));
 bind(buyBtn, () => { if (nearShopItem) window.buyWeapon(nearShopItem.userData.id, nearShopItem.userData.price); });
 exitShopBtn.onclick = (e) => { e.preventDefault(); exitShop(); };
 
@@ -358,7 +373,6 @@ function doShoot() {
   }
 }
 
-// ВЗРЫВ (ИСПРАВЛЕН, БЕЗ УДАЛЕНИЯ ДОМОВ ИЗ МАССИВА)
 function createExplosion(x, z, radius) {
   const p = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 8), new THREE.MeshBasicMaterial({ color: 0xff4400, transparent: true, opacity: 0.8 }));
   p.position.set(x, 1, z); p.userData = { life: 0.5, max: 0.5, radius }; scene.add(p); particles.push(p);
@@ -436,9 +450,8 @@ function updateParticles(dt) {
   }
 }
 
-// ПРОСТЫЕ ФУНКЦИИ
 function updateWanted() { if (wanted > 0) { wantedEl.style.display = 'inline'; wantedEl.textContent = '⭐'.repeat(Math.min(wanted, 5)); } else wantedEl.style.display = 'none'; }
-function updateStats() { document.getElementById('stats-hud').textContent = `👤0 🚗0 🏚️0`; } // Заглушка
+function updateStats() { document.getElementById('stats-hud').textContent = `👤0 🚗0 🏚️0`; }
 
 function updateShopLogic(dt) {
   if (!inShop) return;
@@ -480,7 +493,8 @@ function updatePlayer(dt) {
     playerGroup.rotation.y = Math.atan2(dx, dz);
     walkCycle += dt * 10;
     legs[0].rotation.x = Math.sin(walkCycle) * 0.6; legs[1].rotation.x = -Math.sin(walkCycle) * 0.6;
-  } else { legs[0].rotation.x *= 0.9; legs[1].rotation.x *= 0.9; }
+    arms[0].rotation.x = -Math.sin(walkCycle) * 0.4; arms[1].rotation.x = Math.sin(walkCycle) * 0.4;
+  } else { legs[0].rotation.x *= 0.9; legs[1].rotation.x *= 0.9; arms[0].rotation.x *= 0.9; arms[1].rotation.x *= 0.9; }
   playerGroup.position.x = Math.max(-100, Math.min(100, playerGroup.position.x));
   playerGroup.position.z = Math.max(-100, Math.min(100, playerGroup.position.z));
 }
@@ -502,10 +516,12 @@ function updatePedestrians(dt) {
     p.position.x += Math.sin(p.userData.angle) * p.userData.speed * dt;
     p.position.z += Math.cos(p.userData.angle) * p.userData.speed * dt;
     p.rotation.y = p.userData.angle;
+    p.userData.cycle += dt * 8;
+    p.userData.l1.rotation.x = Math.sin(p.userData.cycle) * 0.5;
+    p.userData.l2.rotation.x = -Math.sin(p.userData.cycle) * 0.5;
     if (Math.random() < 0.01) p.userData.angle += (Math.random() - 0.5);
-    // Проверка на столкновение с машинами
     cars.forEach(c => {
-      if (p.position.distanceTo(c.position) < 2) {
+      if (p.position.distanceTo(c.position) < 2.2) {
         p.userData.angle += Math.PI;
         p.position.x += Math.sin(p.userData.angle) * 2;
         p.position.z += Math.cos(p.userData.angle) * 2;
@@ -534,6 +550,7 @@ function animate() {
     else actBtn.style.display = 'none';
     shootBtn.style.display = (!flyingHeli && !ridingBoat) ? 'flex' : 'none';
     weapBtn.style.display = (!flyingHeli && !ridingBoat) ? 'flex' : 'none';
+    crosshair.style.display = (!flyingHeli && !ridingBoat) ? 'block' : 'none';
   }
   if (!drivingCar && !inShop) { let minD = 5; nearestCar = null; cars.forEach(c => { const d = c.position.distanceTo(playerGroup.position); if (d < minD) { minD = d; nearestCar = c; } }); }
 
