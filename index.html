@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-<title>Mini-GTA v6.1 FINAL (FIXED)</title>
+<title>Mini-GTA v6.5 STABLE</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: -apple-system, Arial, sans-serif; touch-action: none; user-select: none; -webkit-user-select: none; }
@@ -80,7 +80,7 @@
 </head>
 <body>
 
-<div id="loading"><div class="spinner"></div>Загружаем v6.1...</div>
+<div id="loading"><div class="spinner"></div>Загружаем v6.5...</div>
 
 <div id="hud" style="display:none">
   <div>💰 <span class="money" id="money">0</span><br>⭐ <span class="wanted" id="wanted" style="display:none">0</span><div id="race-hud" style="display:none"></div><div class="stats" id="stats-hud">👤0 🚗0 🏚️0</div></div>
@@ -256,7 +256,7 @@ for (let bx = -CITY_SIZE / 2; bx < CITY_SIZE / 2; bx += BLOCK) {
   }
 }
 
-// МАГАЗИН (на берегу)
+// МАГАЗИН
 const shopBuilding = { x: 80, z: 40, w: 12, d: 12, h: 8 };
 const shopMesh = new THREE.Mesh(new THREE.BoxGeometry(shopBuilding.w, shopBuilding.h, shopBuilding.d), new THREE.MeshStandardMaterial({ color: 0xffcc44, roughness: 0.8 }));
 shopMesh.position.set(shopBuilding.x, shopBuilding.h / 2, shopBuilding.z);
@@ -408,9 +408,11 @@ for (let qi = 0; qi < 4; qi++) {
   policeCars.push(makeCar(px, pz, 'police'));
 }
 
-// ВЕРТОЛЁТЫ
+// ВЕРТОЛЁТЫ (ОБЪЯВЛЕНЫ ЗАРАНЕЕ)
 const helis = [];
 const heliHealth = new Map();
+const policeHelis = []; // <-- Явно объявлен массив
+
 function makeHeli(x, z) {
   const g = new THREE.Group();
   const body = new THREE.Mesh(new THREE.SphereGeometry(1.2, 12, 10), new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.7, roughness: 0.3 }));
@@ -428,7 +430,6 @@ function makeHeli(x, z) {
 }
 makeHeli(30, 30); makeHeli(-30, 30);
 
-const policeHelis = [];
 function makePoliceHeli() {
   const g = new THREE.Group();
   const body = new THREE.Mesh(new THREE.SphereGeometry(1.2, 12, 10), new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.7, roughness: 0.3 }));
@@ -1051,7 +1052,6 @@ function updatePedestrians(dt) {
     p.position.x = Math.max(-CITY_SIZE / 2, Math.min(CITY_SIZE / 2, p.position.x)); p.position.z = Math.max(-CITY_SIZE / 2, Math.min(CITY_SIZE / 2, p.position.z));
     p.rotation.y = p.userData.angle; p.userData.walkCycle += dt * 8; p.userData.leg1.rotation.x = Math.sin(p.userData.walkCycle) * 0.5; p.userData.leg2.rotation.x = -Math.sin(p.userData.walkCycle) * 0.5;
     
-    // КОЛЛИЗИЯ С МАШИНАМИ
     cars.forEach(c => {
       if (p.position.distanceTo(c.position) < 2.2) {
         p.userData.angle += Math.PI;
