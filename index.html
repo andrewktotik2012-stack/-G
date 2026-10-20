@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-<title>Mini-GTA v6.3 FIXED</title>
+<title>Mini-GTA v6.4 FINAL</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: -apple-system, Arial, sans-serif; touch-action: none; user-select: none; -webkit-user-select: none; }
@@ -92,7 +92,7 @@
   };
 </script>
 
-<div id="loading"><div class="spinner"></div>Загружаем v6.3...</div>
+<div id="loading"><div class="spinner"></div>Загружаем v6.4...</div>
 
 <div id="hud" style="display:none">
   <div>💰 <span class="money" id="money">0</span><br>⭐ <span class="wanted" id="wanted" style="display:none">0</span><div id="race-hud" style="display:none"></div><div class="stats" id="stats-hud">👤0 🚗0 🏚️0</div></div>
@@ -688,7 +688,6 @@ let achievements = {};
 let inventory = JSON.parse(localStorage.getItem('gta_inv') || '{"rocket": false, "armor": false}');
 let inHospital = false, inShop = false, nearShopItem = null;
 
-// СИСТЕМА ОРУЖИЯ
 let currentWeapon = 'pistol';
 const weapons = {
   pistol: { name: 'Пистолет', ammo: -1, cooldown: 0.2, timer: 0 },
@@ -743,7 +742,7 @@ const repairBtn = document.getElementById('repair-btn');
 const musicBtn = document.getElementById('music-btn');
 const buyBtn = document.getElementById('buy-btn');
 const exitShopBtn = document.getElementById('exit-shop-btn');
-const raceBtn = document.getElementById('race-btn'); // Добавлена переменная raceBtn
+const raceBtn = document.getElementById('race-btn');
 
 let nearestCar = null, nearestHeli = null, drivingCar = null, flyingHeli = null, ridingBoat = null, carSpeed = 0, boatSpeed = 0;
 
@@ -760,7 +759,7 @@ bindBtn(boatBtn, doBoat);
 bindBtn(missionBtn, openMissions); 
 bindBtn(repairBtn, doRepair);
 bindBtn(buyBtn, () => { if (nearShopItem) buyShopItem(nearShopItem); });
-bindBtn(raceBtn, startRace); // Привязана кнопка
+bindBtn(raceBtn, startRace);
 
 exitShopBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); exitShop(); });
 
@@ -1168,7 +1167,7 @@ window.resetGame = function() {
   pedestrians.forEach(p => { p.userData.alive = true; p.visible = true; let px, pz; for (let a = 0; a < 20; a++) { px = (Math.random() - 0.5) * CITY_SIZE; pz = (Math.random() - 0.5) * CITY_SIZE; if (!isRiver(px, pz) && !isInsideBuilding(px, pz, 1)) break; } p.position.set(px, 0, pz); });
   policeCars.forEach(pc => { let px, pz; for (let a = 0; a < 20; a++) { px = (Math.random() - 0.5) * CITY_SIZE; pz = (Math.random() - 0.5) * CITY_SIZE; if (!isRiver(px, pz) && !isInsideBuilding(px, pz, 3)) break; } pc.position.set(px, 0, pz); });
   helis.forEach(h => { h.visible = true; h.userData.crashed = false; h.userData.isCrashed = false; heliHealth.set(h, 5); });
-  buildings.forEach(b => { if (b.isShop) return; buildingHealth.set(b.mesh, 3); b.mesh.material.color.setHex(BUILDING_COLORS[Math.floor(Math.random() * BUILDING_COLORS.length)]); b.mesh.scale.set(1, 1, 1); b.mesh.position.y = b.h / 2; });
+  buildings.forEach(b => { if (!b || !b.isShop) return; buildingHealth.set(b.mesh, 3); b.mesh.material.color.setHex(BUILDING_COLORS[Math.floor(Math.random() * BUILDING_COLORS.length)]); b.mesh.scale.set(1, 1, 1); b.mesh.position.y = b.h / 2; });
   checkpoints.forEach(c => { if (c.userData.ring) scene.remove(c.userData.ring); scene.remove(c); }); checkpoints.length = 0; raceHud.style.display = 'none';
   bullets.forEach(b => scene.remove(b)); bullets.length = 0; grenades.forEach(g => scene.remove(g)); grenades.length = 0;
   spawnMissionMarker(); document.getElementById('gameover-modal').style.display = 'none';
